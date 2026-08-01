@@ -8,6 +8,7 @@ import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { SidebarNav } from './components/SidebarNav';
 import { StatsGrid } from './components/StatsGrid';
+import { AdminPanel } from './admin/AdminPanel';
 import { useClock } from './hooks/useClock';
 import { usePolling } from './hooks/usePolling';
 
@@ -40,7 +41,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/admin" element={<AdminPlaceholder />} />
+      <Route path="/admin" element={<AdminPanel />} />
       <Route path="*" element={<KioskBoard scale={scale} />} />
     </Routes>
   );
@@ -110,21 +111,6 @@ function KioskBoard({ scale }) {
             tagline={settings.company_tagline}
           />
         </main>
-      </div>
-    </div>
-  );
-}
-
-function AdminPlaceholder() {
-  return (
-    <div className="admin-shell">
-      <div className="admin-card">
-        <p className="eyebrow">Phase 2 scaffold</p>
-        <h1>Admin panel coming next</h1>
-        <p>
-          The public kiosk view is wired to the backend. This route is reserved for the
-          authenticated CRUD workspace.
-        </p>
       </div>
     </div>
   );

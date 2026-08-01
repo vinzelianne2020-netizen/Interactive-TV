@@ -353,7 +353,7 @@ public function current()
 ### [x] Task 4.5 — `SettingController@index` and `AnnouncementController@index`
 Straightforward key/value and active-list reads — same pattern as above, cached for 5 minutes since they change rarely.
 
-### Task 4.6 — Image uploads to Supabase Storage
+### [x] Task 4.6 — Image uploads to Supabase Storage
 1. In Supabase Studio → Storage, create a public bucket named `event-images`.
 2. In `EventController@store/update`, when an image file is present, stream it to Supabase's Storage REST endpoint using Guzzle and the publishable key, then save the returned public URL into `image_url`:
 ```php
