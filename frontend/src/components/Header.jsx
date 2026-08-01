@@ -1,10 +1,9 @@
-import { ChevronsRight } from 'lucide-react';
+import { ChevronsLeft } from 'lucide-react';
 
 export function Header({ title, subtitle, onActionClick }) {
   return (
     <header className="header-shell">
       <div>
-        <p className="eyebrow">Interactive bulletin board</p>
         <h1 className="header-title">{title}</h1>
         <p className="header-subtitle">{subtitle}</p>
       </div>
@@ -14,7 +13,7 @@ export function Header({ title, subtitle, onActionClick }) {
         aria-label="Open admin controls"
         onClick={() => onActionClick?.()}
       >
-        <ChevronsRight size={34} strokeWidth={2.6} />
+        <ChevronsLeft size={38} strokeWidth={2.8} />
       </button>
     </header>
   );

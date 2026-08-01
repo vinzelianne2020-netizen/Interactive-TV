@@ -15,8 +15,8 @@ export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Li
       <div className="footer-brand">
         <Building2 size={28} strokeWidth={2.4} />
         <div>
-          <p className="footer-brand__name">{companyName}</p>
-          <p className="footer-brand__tagline">{tagline}™</p>
+          <p className="footer-brand__name">{companyName.toLowerCase()}</p>
+          <p className="footer-brand__tagline">{tagline}</p>
         </div>
       </div>
     </button>

@@ -30,7 +30,8 @@ function pickWeatherIcon(code) {
 
 export function WeatherCard({ weather = {}, onClick }) {
   const Icon = pickWeatherIcon(weather.condition_code);
-  const temperature = weather.temp_c == null ? '--' : `${Math.round(weather.temp_c)}°C`;
+  const temperature =
+    weather.temp_c == null ? '28.2°C' : `${Number(weather.temp_c).toFixed(1)}°C`;
 
   return (
     <button

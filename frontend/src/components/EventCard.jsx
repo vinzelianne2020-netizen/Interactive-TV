@@ -11,17 +11,11 @@ export function EventCard({ event, onClick }) {
       className="event-card event-card--interactive"
       onClick={() => onClick?.(event)}
     >
-      <div className="event-card__media">
-        {event.image_url ? (
-          <img className="event-card__image" src={event.image_url} alt={event.title} loading="lazy" />
-        ) : (
-          <div className="event-card__image event-card__image--placeholder" />
-        )}
-        <div className="event-card__date-badge">
+      <div className="event-card__date-rail" />
+      <div className="event-card__date-badge">
           <span className="event-card__month">{event.month}</span>
           <span className="event-card__day">{event.day}</span>
           <span className="event-card__weekday">{event.weekday}</span>
-        </div>
       </div>
       <div className="event-card__body">
         <div className="event-card__meta-row">
@@ -36,6 +30,13 @@ export function EventCard({ event, onClick }) {
         </div>
         <h3 className="event-card__title">{event.title}</h3>
         <p className="event-card__description">{event.description}</p>
+      </div>
+      <div className="event-card__media">
+        {event.image_url ? (
+          <img className="event-card__image" src={event.image_url} alt={event.title} loading="lazy" />
+        ) : (
+          <div className="event-card__image event-card__image--placeholder" />
+        )}
       </div>
     </button>
   );

@@ -36,6 +36,139 @@ const DEFAULT_SETTINGS = {
   events_rotation_seconds: '24',
 };
 
+const FALLBACK_EVENTS = [
+  {
+    id: 'fallback-1',
+    month: 'JUN',
+    day: '02',
+    weekday: 'MON',
+    time: '10:00 AM',
+    location: 'Conference Hall A',
+    title: 'Town Hall Meeting',
+    description: 'Company updates, plans, and open forum.',
+    image_url:
+      'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
+    category: 'Company Event',
+  },
+  {
+    id: 'fallback-2',
+    month: 'JUN',
+    day: '08',
+    weekday: 'SUN',
+    time: '09:00 AM',
+    location: 'Atrium Lobby',
+    title: 'Family Day Celebration',
+    description: 'A day of fun, and bonding with families.',
+    image_url:
+      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80',
+    category: 'Wellness',
+  },
+  {
+    id: 'fallback-3',
+    month: 'JUN',
+    day: '15',
+    weekday: 'SUN',
+    time: '08:00 AM',
+    location: 'Company Grounds',
+    title: 'Annual Company Picnic',
+    description: 'Food, games, and fun for everyone!',
+    image_url:
+      'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80',
+    category: 'Company Event',
+  },
+  {
+    id: 'fallback-4',
+    month: 'JUN',
+    day: '17',
+    weekday: 'TUE',
+    time: '02:00 PM',
+    location: 'Training Room 2',
+    title: 'Employee Engagement Week',
+    description: 'Activities and programs built for you.',
+    image_url:
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80',
+    category: 'Employee Program',
+  },
+  {
+    id: 'fallback-5',
+    month: 'JUN',
+    day: '24',
+    weekday: 'TUE',
+    time: '09:00 AM',
+    location: 'Executive Conference Room',
+    title: 'Leadership Summit',
+    description: 'Empowering leaders, inspiring tomorrow.',
+    image_url:
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+    category: 'Leadership',
+  },
+  {
+    id: 'fallback-6',
+    month: 'JUN',
+    day: '29',
+    weekday: 'SUN',
+    time: '07:30 AM',
+    location: 'Wellness Center',
+    title: 'Health & Wellness Month',
+    description: 'Your well-being, our priority.',
+    image_url:
+      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80',
+    category: 'Wellness',
+  },
+  {
+    id: 'fallback-7',
+    month: 'JUL',
+    day: '04',
+    weekday: 'FRI',
+    time: '01:30 PM',
+    location: 'Innovation Hub',
+    title: 'Digital Transformation Forum',
+    description: 'Fresh ideas, product demos, and cross-team sharing.',
+    image_url:
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+    category: 'Innovation',
+  },
+  {
+    id: 'fallback-8',
+    month: 'JUL',
+    day: '09',
+    weekday: 'WED',
+    time: '11:00 AM',
+    location: 'Employee Lounge',
+    title: 'Culture & Values Session',
+    description: 'Reconnect with our culture, mission, and team values.',
+    image_url:
+      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80',
+    category: 'Culture',
+  },
+  {
+    id: 'fallback-9',
+    month: 'JUL',
+    day: '18',
+    weekday: 'FRI',
+    time: '03:00 PM',
+    location: 'Main Auditorium',
+    title: 'Customer Success Showcase',
+    description: 'Celebrating wins, stories, and service milestones.',
+    image_url:
+      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
+    category: 'Recognition',
+  },
+  {
+    id: 'fallback-10',
+    month: 'JUL',
+    day: '26',
+    weekday: 'SAT',
+    time: '08:30 AM',
+    location: 'Community Center',
+    title: 'Volunteer Outreach Day',
+    description: 'Join the community program and outreach activities.',
+    image_url:
+      'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1200&q=80',
+    category: 'Community',
+  },
+];
+
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Upcoming Events', default: true },
   { key: 'holidays', label: 'Holiday Next Month' },
@@ -103,6 +236,10 @@ function KioskBoard({ scale }) {
     }),
     [settingsQuery.data],
   );
+  const boardEvents =
+    Array.isArray(eventsQuery.data) && eventsQuery.data.length > 0
+      ? eventsQuery.data
+      : FALLBACK_EVENTS;
 
   const rotationSeconds = Number(settings.events_rotation_seconds ?? 24);
 
@@ -175,7 +312,7 @@ function KioskBoard({ scale }) {
                 onStatClick={handleStatClick}
               />
               <EventsSection
-                events={eventsQuery.data ?? []}
+                events={boardEvents}
                 rotationSeconds={rotationSeconds}
                 kioskMode
                 paused={eventsPaused}

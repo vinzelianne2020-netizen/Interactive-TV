@@ -1,9 +1,9 @@
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, CalendarDays } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { EventCard } from './EventCard';
 
-const EVENTS_PER_PAGE = 6;
+const EVENTS_PER_PAGE = 10;
 
 export function EventsSection({
   events = [],
@@ -15,6 +15,7 @@ export function EventsSection({
   onEventClick,
 }) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(events.length / EVENTS_PER_PAGE)), [events.length]);
 
@@ -39,13 +40,27 @@ export function EventsSection({
     setCurrentPage(0);
   }, [events]);
 
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [events]);
+
+  useEffect(() => {
+    if (events.length <= 1 || paused) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setCurrentSlide((slide) => (slide + 1) % events.length);
+    }, 4500);
+
+    return () => window.clearInterval(timer);
+  }, [events, paused]);
+
   const visibleEvents = events.slice(
     currentPage * EVENTS_PER_PAGE,
     currentPage * EVENTS_PER_PAGE + EVENTS_PER_PAGE,
   );
-
-  const handleNext = () => setCurrentPage((page) => (page + 1) % totalPages);
-  const handlePrev = () => setCurrentPage((page) => (page - 1 + totalPages) % totalPages);
+  const featuredEvent = events[currentSlide] ?? visibleEvents[0] ?? null;
 
   return (
     <section className="events-section">
@@ -61,37 +76,6 @@ export function EventsSection({
         </div>
 
         <div className="events-heading-controls">
-          {totalPages > 1 ? (
-            <>
-              <button
-                type="button"
-                className="events-page-control"
-                aria-label="Previous event page"
-                onClick={handlePrev}
-              >
-                <ChevronLeft size={18} strokeWidth={2.4} />
-              </button>
-              <div className="events-page-indicator" aria-label={`Page ${currentPage + 1} of ${totalPages}`}>
-                {currentPage + 1}/{totalPages}
-              </div>
-              <button
-                type="button"
-                className="events-page-control"
-                aria-label="Next event page"
-                onClick={handleNext}
-              >
-                <ChevronRight size={18} strokeWidth={2.4} />
-              </button>
-              <button
-                type="button"
-                className="events-page-control"
-                aria-label={paused ? 'Resume event rotation' : 'Pause event rotation'}
-                onClick={() => onTogglePause?.()}
-              >
-                {paused ? <Play size={16} strokeWidth={2.4} /> : <Pause size={16} strokeWidth={2.4} />}
-              </button>
-            </>
-          ) : null}
           <button
             type="button"
             className={`section-link ${kioskMode ? 'section-link--disabled section-link--clickable' : ''}`}
@@ -103,29 +87,97 @@ export function EventsSection({
         </div>
       </div>
 
-      {totalPages > 1 ? (
-        <div className="events-dots" role="tablist" aria-label="Event pages">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              role="tab"
-              aria-selected={index === currentPage}
-              aria-label={`Go to event page ${index + 1}`}
-              className={
-                index === currentPage ? 'events-dot events-dot--active' : 'events-dot'
-              }
-              onClick={() => setCurrentPage(index)}
-            />
-          ))}
-        </div>
-      ) : null}
-
       <div className="events-grid">
         {visibleEvents.map((event) => (
           <EventCard key={event.id} event={event} onClick={() => onEventClick?.(event)} />
         ))}
       </div>
+
+      {featuredEvent ? (
+        <section className="event-slideshow">
+          <button
+            type="button"
+            className="event-slideshow__hero"
+            onClick={() => onEventClick?.(featuredEvent)}
+          >
+            <div className="event-slideshow__media">
+              {featuredEvent.image_url ? (
+                <img
+                  className="event-slideshow__image"
+                  src={featuredEvent.image_url}
+                  alt={featuredEvent.title}
+                  loading="lazy"
+                />
+              ) : (
+                <div className="event-slideshow__image event-slideshow__image--placeholder" />
+              )}
+              <div className="event-slideshow__overlay" />
+              <div className="event-slideshow__date">
+                <span className="event-slideshow__month">{featuredEvent.month}</span>
+                <span className="event-slideshow__day">{featuredEvent.day}</span>
+                <span className="event-slideshow__weekday">{featuredEvent.weekday}</span>
+              </div>
+            </div>
+
+            <div className="event-slideshow__content">
+              <p className="eyebrow">Event Spotlight</p>
+              <h3 className="event-slideshow__title">{featuredEvent.title}</h3>
+              <div className="event-slideshow__meta">
+                <span>{featuredEvent.time}</span>
+                <span>{featuredEvent.location}</span>
+                {featuredEvent.category ? <span>{featuredEvent.category}</span> : null}
+              </div>
+              <p className="event-slideshow__description">{featuredEvent.description}</p>
+              <div className="event-slideshow__dots" aria-label="Upcoming event slideshow">
+                {events.map((event, index) => (
+                  <span
+                    key={event.id ?? index}
+                    className={
+                      index === currentSlide
+                        ? 'event-slideshow__dot event-slideshow__dot--active'
+                        : 'event-slideshow__dot'
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </button>
+
+          <div className="event-slideshow__preview-grid" aria-label="Slideshow previews">
+            {events.map((event, index) => (
+              <button
+                key={event.id ?? index}
+                type="button"
+                className={
+                  index === currentSlide
+                    ? 'event-slideshow__preview event-slideshow__preview--active'
+                    : 'event-slideshow__preview'
+                }
+                onClick={() => setCurrentSlide(index)}
+                aria-label={`Show ${event.title}`}
+              >
+                {event.image_url ? (
+                  <img
+                    className="event-slideshow__preview-image"
+                    src={event.image_url}
+                    alt={event.title}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="event-slideshow__preview-image event-slideshow__preview-image--placeholder" />
+                )}
+                <div className="event-slideshow__preview-overlay" />
+                <div className="event-slideshow__preview-copy">
+                  <span className="event-slideshow__preview-date">
+                    {event.month} {event.day}
+                  </span>
+                  <span className="event-slideshow__preview-title">{event.title}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </section>
   );
 }
