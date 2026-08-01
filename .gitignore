@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.*
+!/.env.example
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -25,3 +27,11 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Monorepo app folders
+backend/vendor/
+backend/node_modules/
+backend/storage/*.key
+backend/bootstrap/cache/*.php
+frontend/node_modules/
+frontend/dist/
