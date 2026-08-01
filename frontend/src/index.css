@@ -1604,3 +1604,916 @@ button:disabled {
   transform: scale(0.98);
 }
 
+/* ==========================================================
+   SECTION PAGES (Holidays / Benefits / Awards / New Hires /
+   Training / Safety / ESG / Amenities)
+   ========================================================== */
+
+.section-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: auto;
+  animation: section-fade 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes section-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 6px 2px 2px;
+}
+
+.section-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-page__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex: 0 0 auto;
+  box-shadow: 0 16px 28px rgba(37, 99, 235, 0.24);
+}
+
+.section-page__icon--indigo {
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+}
+
+.section-page__icon--emerald {
+  background: linear-gradient(135deg, #10b981, #047857);
+  box-shadow: 0 16px 28px rgba(16, 185, 129, 0.24);
+}
+
+.section-page__icon--amber {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  box-shadow: 0 16px 28px rgba(245, 158, 11, 0.26);
+}
+
+.section-page__icon--rose {
+  background: linear-gradient(135deg, #f43f5e, #be123c);
+  box-shadow: 0 16px 28px rgba(244, 63, 94, 0.26);
+}
+
+.section-page__icon--blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.section-page__icon--green {
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  box-shadow: 0 16px 28px rgba(34, 197, 94, 0.24);
+}
+
+.section-page__icon--leaf {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 16px 28px rgba(22, 163, 74, 0.26);
+}
+
+.section-page__icon--violet {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  box-shadow: 0 16px 28px rgba(139, 92, 246, 0.28);
+}
+
+.section-page__title {
+  font-family: var(--font-display);
+  font-size: 2.05rem;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: #173860;
+}
+
+.section-page__badge {
+  padding: 12px 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.section-page__badge--emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.section-page__badge--amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.section-page__badge--rose {
+  background: rgba(244, 63, 94, 0.12);
+  color: #be123c;
+}
+
+.section-page__badge--blue {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+}
+
+.section-page__badge--green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+}
+
+.section-page__badge--leaf {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+}
+
+.section-page__badge--violet {
+  background: rgba(139, 92, 246, 0.12);
+  color: #6d28d9;
+}
+
+/* ----------------------------------------------------------
+   HOLIDAYS
+   ---------------------------------------------------------- */
+
+.holiday-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.holiday-card {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.holiday-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.36);
+  box-shadow: 0 22px 40px rgba(29, 68, 128, 0.2);
+}
+
+.holiday-card:active {
+  transform: scale(0.99);
+}
+
+.holiday-card__date {
+  flex: 0 0 auto;
+  width: 112px;
+  padding: 14px 8px 10px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  box-shadow: 0 16px 26px rgba(29, 78, 216, 0.22);
+}
+
+.holiday-card__month {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+
+.holiday-card__day {
+  font-family: var(--font-display);
+  margin-top: 2px;
+  font-size: 2.6rem;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 800;
+}
+
+.holiday-card__weekday {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.holiday-card__body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.holiday-card__title {
+  font-family: var(--font-display);
+  font-size: 1.34rem;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  color: #173860;
+}
+
+.holiday-card__pill {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.holiday-card__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6f819f;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------
+   BENEFITS
+   ---------------------------------------------------------- */
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.benefit-card {
+  min-height: 210px;
+  padding: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.34);
+  box-shadow: 0 22px 40px rgba(29, 68, 128, 0.2);
+}
+
+.benefit-card:active {
+  transform: scale(0.99);
+}
+
+.benefit-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.benefit-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+}
+
+.benefit-card__status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.benefit-card__title {
+  font-family: var(--font-display);
+  font-size: 1.42rem;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  color: #173860;
+}
+
+.benefit-card__subtitle {
+  margin-top: -4px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #5f7093;
+}
+
+.benefit-card__amount {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+/* ----------------------------------------------------------
+   AWARDS
+   ---------------------------------------------------------- */
+
+.award-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.award-card {
+  padding: 18px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.award-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(245, 158, 11, 0.36);
+  box-shadow: 0 22px 40px rgba(168, 85, 247, 0.16);
+}
+
+.award-card:active {
+  transform: scale(0.99);
+}
+
+.award-card__rank {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #43290d;
+  font-weight: 800;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 18px rgba(245, 158, 11, 0.22);
+}
+
+.award-card__category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  align-self: flex-start;
+  background: rgba(139, 92, 246, 0.1);
+  color: #6d28d9;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.award-card__recipient {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  color: #173860;
+}
+
+.award-card__team {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #5f7093;
+}
+
+.award-card__note {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(254, 249, 195, 0.7), rgba(253, 224, 71, 0.35));
+  color: #92400e;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------
+   NEW HIRES
+   ---------------------------------------------------------- */
+
+.hire-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.hire-card {
+  padding: 18px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.hire-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 22px 40px rgba(29, 68, 128, 0.2);
+}
+
+.hire-card:active {
+  transform: scale(0.99);
+}
+
+.hire-card__avatar {
+  width: 82px;
+  height: 82px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 14px 26px rgba(29, 78, 216, 0.24);
+}
+
+.hire-card__name {
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #173860;
+}
+
+.hire-card__role,
+.hire-card__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: #5f7093;
+  font-weight: 700;
+}
+
+.hire-card__team {
+  color: #6f819f;
+}
+
+.hire-card__date {
+  margin-top: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------
+   TRAINING
+   ---------------------------------------------------------- */
+
+.training-list {
+  display: grid;
+  gap: 12px;
+}
+
+.training-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.training-row:hover {
+  transform: translateX(4px);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 18px 36px rgba(29, 68, 128, 0.16);
+}
+
+.training-row:active {
+  transform: scale(0.995);
+}
+
+.training-row__date {
+  flex: 0 0 auto;
+  width: 96px;
+  padding: 12px 8px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #2b79ff, #1d4ed8);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 16px 26px rgba(29, 78, 216, 0.26);
+}
+
+.training-row__month {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.training-row__day {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+.training-row__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.training-row__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.training-row__title {
+  font-family: var(--font-display);
+  font-size: 1.24rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #173860;
+}
+
+.training-row__required {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  flex: 0 0 auto;
+}
+
+.training-row__optional {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  flex: 0 0 auto;
+}
+
+.training-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  color: #5f7093;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.training-row__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.training-row__room {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #173860;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.training-row__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+/* ----------------------------------------------------------
+   SAFETY
+   ---------------------------------------------------------- */
+
+.safety-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.safety-stat {
+  padding: 18px 18px;
+  border-radius: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.safety-stat__value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.safety-stat__label {
+  margin-top: 4px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.safety-list {
+  display: grid;
+  gap: 12px;
+}
+
+.safety-alert {
+  padding: 16px 18px;
+  text-align: left;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 0;
+  border-radius: 22px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.safety-alert:hover {
+  transform: translateX(3px);
+  box-shadow: 0 18px 32px rgba(185, 28, 28, 0.12);
+}
+
+.safety-alert:active {
+  transform: scale(0.995);
+}
+
+.safety-alert__icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.safety-alert__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.safety-alert__title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.safety-alert__level {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.safety-alert__note {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+/* ----------------------------------------------------------
+   ESG
+   ---------------------------------------------------------- */
+
+.esg-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.esg-card {
+  padding: 18px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.esg-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(22, 163, 74, 0.3);
+  box-shadow: 0 22px 40px rgba(22, 163, 74, 0.18);
+}
+
+.esg-card:active {
+  transform: scale(0.99);
+}
+
+.esg-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #173860;
+  box-shadow: 0 14px 26px rgba(22, 163, 74, 0.2);
+}
+
+.esg-card__title {
+  font-family: var(--font-display);
+  font-size: 1.32rem;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: #173860;
+}
+
+.esg-card__scope {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #5f7093;
+}
+
+.esg-card__impact {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  color: #15803d;
+}
+
+.esg-card__progress {
+  position: relative;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  overflow: hidden;
+}
+
+.esg-card__progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  transition: width 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.esg-card__progress-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #173860;
+  font-size: 0.84rem;
+}
+
+/* ----------------------------------------------------------
+   AMENITIES
+   ---------------------------------------------------------- */
+
+.amenity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.amenity-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.amenity-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 22px 40px rgba(139, 92, 246, 0.18);
+}
+
+.amenity-card:active {
+  transform: scale(0.99);
+}
+
+.amenity-card__top {
+  min-height: 110px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-end;
+  color: #11324d;
+  box-shadow: inset 0 -10px 20px rgba(255, 255, 255, 0.28);
+}
+
+.amenity-card__body {
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.amenity-card__category {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.1);
+  color: #6d28d9;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.amenity-card__title {
+  font-family: var(--font-display);
+  font-size: 1.26rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #173860;
+}
+
+.amenity-card__hours {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.amenity-card__note {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #5f7093;
+  font-weight: 600;
+}
+
+
