@@ -23,6 +23,14 @@ class AnnouncementController extends Controller
     }
 
     /**
+     * Display all announcements for the admin workspace.
+     */
+    public function adminIndex(): JsonResponse
+    {
+        return response()->json(['data' => Announcement::orderBy('sort_order')->get()]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse

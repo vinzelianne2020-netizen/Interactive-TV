@@ -30,6 +30,19 @@ class EventController extends Controller
     }
 
     /**
+     * Display all events for the admin workspace.
+     */
+    public function adminIndex(): JsonResponse
+    {
+        $events = Event::orderByDesc('event_date')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Event $event) => $this->formatEvent($event));
+
+        return response()->json(['data' => $events]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse

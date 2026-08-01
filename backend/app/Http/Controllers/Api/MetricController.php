@@ -31,6 +31,14 @@ class MetricController extends Controller
     }
 
     /**
+     * Display all stored metrics for the admin workspace.
+     */
+    public function adminIndex(): JsonResponse
+    {
+        return response()->json(['data' => Metric::orderBy('key')->get()]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse

@@ -22,8 +22,11 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/admin/events', [EventController::class, 'adminIndex']);
     Route::apiResource('/admin/events', EventController::class)->except(['index']);
+    Route::get('/admin/metrics', [MetricController::class, 'adminIndex']);
     Route::apiResource('/admin/metrics', MetricController::class)->except(['index']);
+    Route::get('/admin/announcements', [AnnouncementController::class, 'adminIndex']);
     Route::apiResource('/admin/announcements', AnnouncementController::class)->except(['index']);
     Route::put('/admin/settings/{key}', [SettingController::class, 'update']);
 });
