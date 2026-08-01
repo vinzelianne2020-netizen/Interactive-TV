@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    'weather' => [
+        'key' => env('WEATHER_API_KEY'),
+        'lat' => env('WEATHER_LAT'),
+        'lon' => env('WEATHER_LON'),
+        'city' => env('WEATHER_CITY'),
+    ],
+
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'key' => env('SUPABASE_PUBLISHABLE_KEY'),
+    ],
+
 ];
