@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class AnnouncementController extends Controller
@@ -15,9 +16,11 @@ class AnnouncementController extends Controller
      */
     public function index(): JsonResponse
     {
-        $announcements = Announcement::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        $announcements = Cache::remember('announcements:active', now()->addMinutes(5), function () {
+            return Announcement::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        });
 
         return response()->json(['data' => $announcements]);
     }
@@ -40,6 +43,8 @@ class AnnouncementController extends Controller
             'is_active' => ['sometimes', 'boolean'],
             'sort_order' => ['sometimes', 'integer'],
         ]));
+
+        Cache::forget('announcements:active');
 
         return response()->json(['data' => $announcement], 201);
     }
@@ -64,6 +69,8 @@ class AnnouncementController extends Controller
             'sort_order' => ['sometimes', 'integer'],
         ]));
 
+        Cache::forget('announcements:active');
+
         return response()->json(['data' => $announcement->refresh()]);
     }
 
@@ -73,6 +80,8 @@ class AnnouncementController extends Controller
     public function destroy(string $id): JsonResponse
     {
         Announcement::findOrFail($id)->delete();
+
+        Cache::forget('announcements:active');
 
         return response()->json(['message' => 'Announcement deleted']);
     }

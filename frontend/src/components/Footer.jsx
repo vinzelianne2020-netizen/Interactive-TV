@@ -1,8 +1,8 @@
 import { Building2, Users2 } from 'lucide-react';
 
-export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Life above all' }) {
+export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Life above all', onClick }) {
   return (
-    <footer className="footer-card">
+    <button type="button" className="footer-card footer-card--interactive" onClick={() => onClick?.()}>
       <div className="footer-card__copy">
         <span className="footer-card__icon">
           <Users2 size={22} strokeWidth={2.4} />
@@ -19,6 +19,6 @@ export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Li
           <p className="footer-brand__tagline">{tagline}™</p>
         </div>
       </div>
-    </footer>
+    </button>
   );
 }

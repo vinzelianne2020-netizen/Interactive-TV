@@ -1,14 +1,22 @@
 import { Clock3, MapPin } from 'lucide-react';
 
-export function EventCard({ event }) {
+export function EventCard({ event, onClick }) {
   if (!event) {
     return null;
   }
 
   return (
-    <article className="event-card">
+    <button
+      type="button"
+      className="event-card event-card--interactive"
+      onClick={() => onClick?.(event)}
+    >
       <div className="event-card__media">
-        <img className="event-card__image" src={event.image_url} alt={event.title} />
+        {event.image_url ? (
+          <img className="event-card__image" src={event.image_url} alt={event.title} loading="lazy" />
+        ) : (
+          <div className="event-card__image event-card__image--placeholder" />
+        )}
         <div className="event-card__date-badge">
           <span className="event-card__month">{event.month}</span>
           <span className="event-card__day">{event.day}</span>
@@ -29,6 +37,6 @@ export function EventCard({ event }) {
         <h3 className="event-card__title">{event.title}</h3>
         <p className="event-card__description">{event.description}</p>
       </div>
-    </article>
+    </button>
   );
 }

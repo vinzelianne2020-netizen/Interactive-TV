@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -14,7 +15,11 @@ class SettingController extends Controller
      */
     public function index(): JsonResponse
     {
-        return response()->json(['data' => Setting::pluck('value', 'key')]);
+        $settings = Cache::remember('settings:all', now()->addMinutes(5), function () {
+            return Setting::pluck('value', 'key');
+        });
+
+        return response()->json(['data' => $settings]);
     }
 
     /**
@@ -44,6 +49,8 @@ class SettingController extends Controller
                 'value' => ['required', 'string'],
             ])
         );
+
+        Cache::forget('settings:all');
 
         return response()->json(['data' => $setting]);
     }

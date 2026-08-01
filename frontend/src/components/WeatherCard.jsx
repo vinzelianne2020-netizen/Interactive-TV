@@ -28,12 +28,16 @@ function pickWeatherIcon(code) {
   return CloudSun;
 }
 
-export function WeatherCard({ weather = {} }) {
+export function WeatherCard({ weather = {}, onClick }) {
   const Icon = pickWeatherIcon(weather.condition_code);
   const temperature = weather.temp_c == null ? '--' : `${Math.round(weather.temp_c)}°C`;
 
   return (
-    <article className="metric-card metric-card--weather">
+    <button
+      type="button"
+      className="metric-card metric-card--weather metric-card--interactive"
+      onClick={() => onClick?.()}
+    >
       <div className="metric-badge metric-badge--weather">
         <Icon size={22} strokeWidth={2.3} />
       </div>
@@ -42,6 +46,6 @@ export function WeatherCard({ weather = {} }) {
         <p className="metric-label">Current Weather</p>
         <p className="weather-city">{weather.city ?? 'Cebu City, Philippines'}</p>
       </div>
-    </article>
+    </button>
   );
 }

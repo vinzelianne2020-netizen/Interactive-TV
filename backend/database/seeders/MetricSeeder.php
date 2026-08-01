@@ -2,41 +2,72 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class MetricSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        DB::table('metrics')->upsert([
+        $metrics = [
+            [
+                'key' => 'upcoming_events',
+                'label' => 'Upcoming Events',
+                'value' => '6',
+                'icon' => 'CalendarDays',
+            ],
             [
                 'key' => 'training_sessions',
                 'label' => 'Training Sessions',
                 'value' => '12',
                 'icon' => 'Users2',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'safety_score',
                 'label' => 'Safety Score',
                 'value' => '98%',
                 'icon' => 'ShieldCheck',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'key' => 'esg_projects',
                 'label' => 'ESG Projects',
                 'value' => '8',
                 'icon' => 'Leaf',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
-        ], ['key'], ['label', 'value', 'icon', 'updated_at']);
+            [
+                'key' => 'holidays_next_month',
+                'label' => 'Holidays (Next)',
+                'value' => '3',
+                'icon' => 'CalendarDays',
+            ],
+            [
+                'key' => 'new_hires_this_month',
+                'label' => 'New Hires',
+                'value' => '6',
+                'icon' => 'UserPlus',
+            ],
+            [
+                'key' => 'days_without_lti',
+                'label' => 'Days No LTI',
+                'value' => '342',
+                'icon' => 'ShieldCheck',
+            ],
+            [
+                'key' => 'active_amenities',
+                'label' => 'Amenities',
+                'value' => '6',
+                'icon' => 'Sofa',
+            ],
+        ];
+
+        foreach ($metrics as $metric) {
+            DB::table('metrics')->updateOrInsert(
+                ['key' => $metric['key']],
+                $metric + [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            );
+        }
     }
 }

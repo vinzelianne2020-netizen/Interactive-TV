@@ -1,14 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 
 import { client } from './api/client';
 import { AnnouncementBanner } from './components/AnnouncementBanner';
+import { EventDetailsModal } from './components/EventDetailsModal';
 import { EventsSection } from './components/EventsSection';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { SidebarNav } from './components/SidebarNav';
 import { StatsGrid } from './components/StatsGrid';
 import { AdminPanel } from './admin/AdminPanel';
+import { AmenitiesSection } from './sections/AmenitiesSection';
+import { AwardsSection } from './sections/AwardsSection';
+import { BenefitsSection } from './sections/BenefitsSection';
+import { ESGSection } from './sections/ESGSection';
+import { HolidaysSection } from './sections/HolidaysSection';
+import { NewHiresSection } from './sections/NewHiresSection';
+import { SafetySection } from './sections/SafetySection';
+import { TrainingSection } from './sections/TrainingSection';
 import { useClock } from './hooks/useClock';
 import { usePolling } from './hooks/usePolling';
 
@@ -26,6 +35,18 @@ const DEFAULT_SETTINGS = {
   weather_city: 'Cebu City, Philippines',
   events_rotation_seconds: '24',
 };
+
+const NAV_ITEMS = [
+  { key: 'dashboard', label: 'Upcoming Events', default: true },
+  { key: 'holidays', label: 'Holiday Next Month' },
+  { key: 'benefits', label: 'Benefit Releases' },
+  { key: 'awards', label: 'Awards' },
+  { key: 'new_hires', label: 'New Hire' },
+  { key: 'training', label: 'Training Schedules' },
+  { key: 'safety', label: 'Safety' },
+  { key: 'esg', label: 'ESG' },
+  { key: 'amenities', label: 'Amenities' },
+];
 
 function App() {
   const [scale, setScale] = useState(() => calculateScale());
@@ -48,6 +69,7 @@ function App() {
 }
 
 function KioskBoard({ scale }) {
+  const navigate = useNavigate();
   const refreshMs = Number(import.meta.env.VITE_REFRESH_INTERVAL_MS ?? 60000);
   const settingsIntervalMs = 15 * 60 * 1000;
 
@@ -84,33 +106,105 @@ function KioskBoard({ scale }) {
 
   const rotationSeconds = Number(settings.events_rotation_seconds ?? 24);
 
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [eventsPaused, setEventsPaused] = useState(false);
+  const [announcementsPaused, setAnnouncementsPaused] = useState(false);
+
+  const handleNavSelect = (section) => {
+    setActiveSection(section);
+  };
+
+  const handleOpenAdmin = () => {
+    navigate('/admin');
+  };
+
+  const handleStatClick = (statKey) => {
+    if (statKey === 'upcoming_events') {
+      handleNavSelect('dashboard');
+    }
+    if (statKey === 'safety_score') {
+      handleNavSelect('safety');
+    }
+    if (statKey === 'training_sessions') {
+      handleNavSelect('training');
+    }
+    if (statKey === 'esg_projects') {
+      handleNavSelect('esg');
+    }
+    if (statKey === 'weather') {
+      handleNavSelect('amenities');
+    }
+    if (statKey === 'clock') {
+      handleNavSelect('holidays');
+    }
+  };
+
   return (
     <div className="tv-stage">
       <div className="tv-canvas" style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
         <div className="stage-orb stage-orb--left" aria-hidden="true" />
         <div className="stage-orb stage-orb--right" aria-hidden="true" />
 
-        <SidebarNav />
+        <SidebarNav
+          items={NAV_ITEMS}
+          activeKey={activeSection}
+          onSelect={handleNavSelect}
+        />
 
         <main className="dashboard-shell">
-          <Header title={settings.app_title} subtitle={settings.app_subtitle} />
+          <Header
+            title={settings.app_title}
+            subtitle={settings.app_subtitle}
+            onActionClick={handleOpenAdmin}
+          />
           <AnnouncementBanner
             announcements={announcementsQuery.data ?? []}
             fallbackMessage={DEFAULT_SETTINGS.app_subtitle}
+            paused={announcementsPaused}
+            onTogglePause={() => setAnnouncementsPaused((value) => !value)}
+            onSelect={() => handleNavSelect('benefits')}
           />
-          <StatsGrid metrics={metricsQuery.data ?? {}} weather={weatherQuery.data ?? {}} clock={clock} />
-          <EventsSection
-            events={eventsQuery.data ?? []}
-            rotationSeconds={rotationSeconds}
-            kioskMode
-          />
+
+          {activeSection === 'dashboard' ? (
+            <>
+              <StatsGrid
+                metrics={metricsQuery.data ?? {}}
+                weather={weatherQuery.data ?? {}}
+                clock={clock}
+                onStatClick={handleStatClick}
+              />
+              <EventsSection
+                events={eventsQuery.data ?? []}
+                rotationSeconds={rotationSeconds}
+                kioskMode
+                paused={eventsPaused}
+                onTogglePause={() => setEventsPaused((value) => !value)}
+                onViewAllClick={() => handleNavSelect('holidays')}
+                onEventClick={setSelectedEvent}
+              />
+            </>
+          ) : null}
+
+          {activeSection === 'holidays' ? <HolidaysSection /> : null}
+          {activeSection === 'benefits' ? <BenefitsSection /> : null}
+          {activeSection === 'awards' ? <AwardsSection /> : null}
+          {activeSection === 'new_hires' ? <NewHiresSection /> : null}
+          {activeSection === 'training' ? <TrainingSection /> : null}
+          {activeSection === 'safety' ? <SafetySection /> : null}
+          {activeSection === 'esg' ? <ESGSection /> : null}
+          {activeSection === 'amenities' ? <AmenitiesSection /> : null}
+
           <Footer
             message={settings.footer_message}
             thanks={settings.footer_thanks}
             companyName={settings.company_name}
             tagline={settings.company_tagline}
+            onClick={() => handleNavSelect('amenities')}
           />
         </main>
+
+        <EventDetailsModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
       </div>
     </div>
   );
