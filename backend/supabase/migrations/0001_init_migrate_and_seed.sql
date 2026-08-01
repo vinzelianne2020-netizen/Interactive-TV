@@ -148,6 +148,8 @@ CREATE TABLE IF NOT EXISTS migrations (
     batch INTEGER NOT NULL
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS migrations_migration_unique ON migrations (migration);
+
 INSERT INTO migrations (migration, batch) VALUES
     ('0001_01_01_000000_create_users_table', 1),
     ('0001_01_01_000001_create_cache_table', 1),
