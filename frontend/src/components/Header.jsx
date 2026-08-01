@@ -1,4 +1,4 @@
-import { ChevronsLeft } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export function Header({ title, subtitle, onActionClick }) {
   return (
@@ -13,7 +13,7 @@ export function Header({ title, subtitle, onActionClick }) {
         aria-label="Open admin controls"
         onClick={() => onActionClick?.()}
       >
-        <ChevronsLeft size={38} strokeWidth={2.8} />
+        <img src={logo} alt="Knowles logo" className="header-logo" />
       </button>
     </header>
   );

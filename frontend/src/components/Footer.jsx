@@ -1,4 +1,5 @@
-import { Building2, Users2 } from 'lucide-react';
+import { Users2 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Life above all', onClick }) {
   return (
@@ -13,7 +14,7 @@ export function Footer({ message, thanks, companyName = 'Knowles', tagline = 'Li
         </div>
       </div>
       <div className="footer-brand">
-        <Building2 size={28} strokeWidth={2.4} />
+        <img src={logo} alt={`${companyName} logo`} className="footer-brand__logo" />
         <div>
           <p className="footer-brand__name">{companyName.toLowerCase()}</p>
           <p className="footer-brand__tagline">{tagline}</p>
