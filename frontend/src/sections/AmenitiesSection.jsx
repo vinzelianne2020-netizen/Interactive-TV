@@ -51,6 +51,12 @@ export const AMENITIES = [
   },
 ];
 
+const AMENITY_KPIS = [
+  { label: 'Amenities', value: '6', meta: 'Visible workplace perks' },
+  { label: 'Access Window', value: '24/7', meta: 'For selected facilities' },
+  { label: 'Pickup Points', value: '3', meta: 'Shuttle support in Cebu' },
+];
+
 const TONE_CARD = {
   orange: 'linear-gradient(135deg, #fed7aa, #fb923c)',
   coffee: 'linear-gradient(135deg, #fde68a, #a16207)',
@@ -79,7 +85,23 @@ export function AmenitiesSection({ title = 'Amenities' }) {
         </div>
       </header>
 
-      <div className="amenity-grid">
+      <p className="section-page__lead">
+        Showcase the workplace experience through premium facility cards covering dining,
+        wellness, transport, quiet spaces, and productivity support.
+      </p>
+
+      <div className="section-overview">
+        {AMENITY_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="amenity-grid">
         {AMENITIES.map((amenity) => {
           const Icon = amenity.icon;
           return (
@@ -102,6 +124,7 @@ export function AmenitiesSection({ title = 'Amenities' }) {
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );

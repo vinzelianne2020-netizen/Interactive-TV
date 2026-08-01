@@ -51,6 +51,12 @@ export const NEW_HIRES = [
   },
 ];
 
+const NEW_HIRE_KPIS = [
+  { label: 'New Joiners', value: '6', meta: 'July / August intake' },
+  { label: 'Teams Covered', value: '6', meta: 'Across operations and corporate' },
+  { label: 'Onboarding', value: '92%', meta: 'Current completion rate' },
+];
+
 export function NewHiresSection({ title = 'New Hires' }) {
   return (
     <section className="section-page">
@@ -70,7 +76,23 @@ export function NewHiresSection({ title = 'New Hires' }) {
         </div>
       </header>
 
-      <div className="hire-grid">
+      <p className="section-page__lead">
+        Welcome new colleagues with a clear, polished overview of who joined, where they are
+        contributing, and how onboarding is progressing.
+      </p>
+
+      <div className="section-overview">
+        {NEW_HIRE_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="hire-grid">
         {NEW_HIRES.map((hire) => (
           <button key={hire.name} type="button" className="hire-card">
             <div
@@ -93,6 +115,7 @@ export function NewHiresSection({ title = 'New Hires' }) {
             </span>
           </button>
         ))}
+        </div>
       </div>
     </section>
   );

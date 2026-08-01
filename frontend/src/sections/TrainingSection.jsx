@@ -57,6 +57,12 @@ export const TRAINING_SCHEDULES = [
   },
 ];
 
+const TRAINING_KPIS = [
+  { label: 'Sessions', value: '6', meta: 'Scheduled this month' },
+  { label: 'Open Seats', value: '132', meta: 'Across optional programs' },
+  { label: 'Mandatory', value: '3', meta: 'Compliance-critical tracks' },
+];
+
 const TONE_DOT = {
   red: '#dc2626',
   amber: '#d97706',
@@ -85,7 +91,23 @@ export function TrainingSection({ title = 'Training Schedules' }) {
         </div>
       </header>
 
-      <div className="training-list">
+      <p className="section-page__lead">
+        Keep teams informed with a premium view of learning schedules, required certifications,
+        session capacity, and room assignments.
+      </p>
+
+      <div className="section-overview">
+        {TRAINING_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="training-list">
         {TRAINING_SCHEDULES.map((session) => {
           const date = new Date(session.date);
           const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
@@ -128,6 +150,7 @@ export function TrainingSection({ title = 'Training Schedules' }) {
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );

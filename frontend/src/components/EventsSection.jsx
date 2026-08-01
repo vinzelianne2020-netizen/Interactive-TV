@@ -94,89 +94,53 @@ export function EventsSection({
       </div>
 
       {featuredEvent ? (
-        <section className="event-slideshow">
-          <button
-            type="button"
-            className="event-slideshow__hero"
-            onClick={() => onEventClick?.(featuredEvent)}
-          >
-            <div className="event-slideshow__media">
-              {featuredEvent.image_url ? (
-                <img
-                  className="event-slideshow__image"
-                  src={featuredEvent.image_url}
-                  alt={featuredEvent.title}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="event-slideshow__image event-slideshow__image--placeholder" />
-              )}
-              <div className="event-slideshow__overlay" />
-              <div className="event-slideshow__date">
-                <span className="event-slideshow__month">{featuredEvent.month}</span>
-                <span className="event-slideshow__day">{featuredEvent.day}</span>
-                <span className="event-slideshow__weekday">{featuredEvent.weekday}</span>
-              </div>
+        <button
+          type="button"
+          className="event-slideshow"
+          onClick={() => onEventClick?.(featuredEvent)}
+        >
+          <div className="event-slideshow__media">
+            {featuredEvent.image_url ? (
+              <img
+                className="event-slideshow__image"
+                src={featuredEvent.image_url}
+                alt={featuredEvent.title}
+                loading="lazy"
+              />
+            ) : (
+              <div className="event-slideshow__image event-slideshow__image--placeholder" />
+            )}
+            <div className="event-slideshow__overlay" />
+            <div className="event-slideshow__date">
+              <span className="event-slideshow__month">{featuredEvent.month}</span>
+              <span className="event-slideshow__day">{featuredEvent.day}</span>
+              <span className="event-slideshow__weekday">{featuredEvent.weekday}</span>
             </div>
-
-            <div className="event-slideshow__content">
-              <p className="eyebrow">Event Spotlight</p>
-              <h3 className="event-slideshow__title">{featuredEvent.title}</h3>
-              <div className="event-slideshow__meta">
-                <span>{featuredEvent.time}</span>
-                <span>{featuredEvent.location}</span>
-                {featuredEvent.category ? <span>{featuredEvent.category}</span> : null}
-              </div>
-              <p className="event-slideshow__description">{featuredEvent.description}</p>
-              <div className="event-slideshow__dots" aria-label="Upcoming event slideshow">
-                {events.map((event, index) => (
-                  <span
-                    key={event.id ?? index}
-                    className={
-                      index === currentSlide
-                        ? 'event-slideshow__dot event-slideshow__dot--active'
-                        : 'event-slideshow__dot'
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          </button>
-
-          <div className="event-slideshow__preview-grid" aria-label="Slideshow previews">
-            {events.map((event, index) => (
-              <button
-                key={event.id ?? index}
-                type="button"
-                className={
-                  index === currentSlide
-                    ? 'event-slideshow__preview event-slideshow__preview--active'
-                    : 'event-slideshow__preview'
-                }
-                onClick={() => setCurrentSlide(index)}
-                aria-label={`Show ${event.title}`}
-              >
-                {event.image_url ? (
-                  <img
-                    className="event-slideshow__preview-image"
-                    src={event.image_url}
-                    alt={event.title}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="event-slideshow__preview-image event-slideshow__preview-image--placeholder" />
-                )}
-                <div className="event-slideshow__preview-overlay" />
-                <div className="event-slideshow__preview-copy">
-                  <span className="event-slideshow__preview-date">
-                    {event.month} {event.day}
-                  </span>
-                  <span className="event-slideshow__preview-title">{event.title}</span>
-                </div>
-              </button>
-            ))}
           </div>
-        </section>
+
+          <div className="event-slideshow__content">
+            <p className="eyebrow">Event Spotlight</p>
+            <h3 className="event-slideshow__title">{featuredEvent.title}</h3>
+            <div className="event-slideshow__meta">
+              <span>{featuredEvent.time}</span>
+              <span>{featuredEvent.location}</span>
+              {featuredEvent.category ? <span>{featuredEvent.category}</span> : null}
+            </div>
+            <p className="event-slideshow__description">{featuredEvent.description}</p>
+            <div className="event-slideshow__dots" aria-label="Upcoming event slideshow">
+              {events.map((event, index) => (
+                <span
+                  key={event.id ?? index}
+                  className={
+                    index === currentSlide
+                      ? 'event-slideshow__dot event-slideshow__dot--active'
+                      : 'event-slideshow__dot'
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </button>
       ) : null}
     </section>
   );

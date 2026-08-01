@@ -51,6 +51,12 @@ export const ESG_PROJECTS = [
   },
 ];
 
+const ESG_KPIS = [
+  { label: 'Active Projects', value: '6', meta: 'Across environmental and social tracks' },
+  { label: 'Waste Reduction', value: '42%', meta: 'Single-use plastics improvement' },
+  { label: 'Scholars', value: '42', meta: 'Community education impact' },
+];
+
 const TONE_GRADIENTS = {
   sun: 'linear-gradient(135deg, #fde68a, #f59e0b)',
   blue: 'linear-gradient(135deg, #bae6fd, #0284c7)',
@@ -79,7 +85,23 @@ export function ESGSection({ title = 'ESG' }) {
         </div>
       </header>
 
-      <div className="esg-grid">
+      <p className="section-page__lead">
+        Present sustainability, governance, and community impact in a premium dashboard that is
+        easy to scan and strong enough for executive storytelling.
+      </p>
+
+      <div className="section-overview">
+        {ESG_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="esg-grid">
         {ESG_PROJECTS.map((project) => {
           const Icon = project.icon;
           return (
@@ -103,6 +125,7 @@ export function ESGSection({ title = 'ESG' }) {
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );

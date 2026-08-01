@@ -51,6 +51,12 @@ export const AWARDS = [
   },
 ];
 
+const AWARD_KPIS = [
+  { label: 'Recognitions', value: '6', meta: 'This quarter' },
+  { label: 'Teams Honored', value: '6', meta: 'Cross-functional excellence' },
+  { label: 'Impact Stories', value: '18+', meta: 'Shared internally this month' },
+];
+
 const TONE_BADGE = {
   gold: 'linear-gradient(135deg, #fde047, #f59e0b)',
   silver: 'linear-gradient(135deg, #e5e7eb, #9ca3af)',
@@ -79,7 +85,23 @@ export function AwardsSection({ title = 'Awards & Recognitions' }) {
         </div>
       </header>
 
-      <div className="award-grid">
+      <p className="section-page__lead">
+        Celebrate standout performance, innovation, safety leadership, and culture-building
+        contributions from across the organization.
+      </p>
+
+      <div className="section-overview">
+        {AWARD_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="award-grid">
         {AWARDS.map((award) => (
           <button key={award.rank} type="button" className="award-card">
             <div className="award-card__rank" style={{ background: TONE_BADGE[award.tone] }}>
@@ -98,6 +120,7 @@ export function AwardsSection({ title = 'Awards & Recognitions' }) {
             </div>
           </button>
         ))}
+        </div>
       </div>
     </section>
   );

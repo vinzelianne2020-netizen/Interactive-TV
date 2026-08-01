@@ -28,6 +28,12 @@ export const SAFETY_ALERTS = [
   },
 ];
 
+const SAFETY_KPIS = [
+  { label: 'LTI-Free Days', value: '342', meta: 'Current streak' },
+  { label: 'Audit Readiness', value: '95%', meta: 'Environment, health & safety' },
+  { label: 'Campaign Focus', value: 'PPE', meta: 'August priority program' },
+];
+
 const TONE_BOX = {
   emerald: { bg: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', color: '#047857' },
   amber: { bg: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#b45309' },
@@ -55,6 +61,22 @@ export function SafetySection({ title = 'Safety' }) {
         </div>
       </header>
 
+      <p className="section-page__lead">
+        Surface safety performance, live campaign priorities, and critical reminders in a clean
+        executive-style view for the whole workplace.
+      </p>
+
+      <div className="section-overview">
+        {SAFETY_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
       <div className="safety-grid">
         {SAFETY_STATS.map((stat) => {
           const tone = TONE_BOX[stat.tone] ?? TONE_BOX.blue;
@@ -100,6 +122,7 @@ export function SafetySection({ title = 'Safety' }) {
             </button>
           );
         })}
+      </div>
       </div>
     </section>
   );

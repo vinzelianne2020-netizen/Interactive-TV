@@ -11,6 +11,12 @@ export const HOLIDAYS = [
   { date: '2027-01-01', title: 'New Year’s Day', type: 'Regular Holiday', color: '#059669' },
 ];
 
+const HOLIDAY_KPIS = [
+  { label: 'Next Holiday', value: 'Aug 26', meta: 'National Heroes Day' },
+  { label: 'Regular Holidays', value: '5', meta: 'Payroll credited' },
+  { label: 'Long Weekends', value: '3', meta: 'Q3 to Q1 outlook' },
+];
+
 export function HolidaysSection({ title = 'Holidays Next Month' }) {
   return (
     <section className="section-page">
@@ -30,7 +36,23 @@ export function HolidaysSection({ title = 'Holidays Next Month' }) {
         </div>
       </header>
 
-      <div className="holiday-grid">
+      <p className="section-page__lead">
+        Plan ahead with the official holiday calendar, company observances, and upcoming
+        long-weekend opportunities for teams and employees.
+      </p>
+
+      <div className="section-overview">
+        {HOLIDAY_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="holiday-grid">
         {HOLIDAYS.map((holiday) => {
           const date = new Date(holiday.date);
           const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
@@ -60,6 +82,7 @@ export function HolidaysSection({ title = 'Holidays Next Month' }) {
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );

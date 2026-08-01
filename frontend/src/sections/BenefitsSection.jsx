@@ -57,6 +57,12 @@ export const BENEFITS = [
   },
 ];
 
+const BENEFIT_KPIS = [
+  { label: 'Active Benefits', value: '6', meta: 'Current release cycle' },
+  { label: 'Estimated Value', value: '₱ 80K+', meta: 'Combined visible perks' },
+  { label: 'Eligible Teams', value: 'All', meta: 'Role-based releases apply' },
+];
+
 const TONE_STYLES = {
   emerald: { bg: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', color: '#047857' },
   indigo: { bg: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', color: '#4338ca' },
@@ -85,7 +91,23 @@ export function BenefitsSection({ title = 'Benefit Releases' }) {
         </div>
       </header>
 
-      <div className="benefit-grid">
+      <p className="section-page__lead">
+        A premium overview of employee benefits, allowances, and release windows so teams can
+        quickly understand what is available and what is coming next.
+      </p>
+
+      <div className="section-overview">
+        {BENEFIT_KPIS.map((item) => (
+          <div key={item.label} className="section-kpi">
+            <p className="section-kpi__label">{item.label}</p>
+            <p className="section-kpi__value">{item.value}</p>
+            <p className="section-kpi__meta">{item.meta}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-panel">
+        <div className="benefit-grid">
         {BENEFITS.map((benefit) => {
           const Icon = benefit.icon;
           const tone = TONE_STYLES[benefit.tone] ?? TONE_STYLES.blue;
@@ -111,6 +133,7 @@ export function BenefitsSection({ title = 'Benefit Releases' }) {
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );
