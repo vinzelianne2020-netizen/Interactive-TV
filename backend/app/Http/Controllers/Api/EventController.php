@@ -23,7 +23,6 @@ class EventController extends Controller
             ->whereDate('event_date', '>=', now()->subDay())
             ->orderBy('event_date')
             ->orderBy('sort_order')
-            ->take(6)
             ->get()
             ->map(fn (Event $event) => $this->formatEvent($event));
 

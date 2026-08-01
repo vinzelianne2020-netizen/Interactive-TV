@@ -71,14 +71,14 @@ Interactive-TV/
 
 ## 2. Repository & Environment Scaffolding
 
-### Task 2.1 — Clone and init structure
+### [x] Task 2.1 — Clone and init structure
 ```bash
 git clone https://github.com/vinzelianne2020-netizen/Interactive-TV.git
 cd Interactive-TV
 mkdir backend frontend
 ```
 
-### Task 2.2 — Root `.gitignore`
+### [x] Task 2.2 — Root `.gitignore`
 Create `/.gitignore`:
 ```gitignore
 # Env files
@@ -102,7 +102,7 @@ frontend/dist/
 !.vscode/extensions.json
 ```
 
-### Task 2.3 — Scaffold Laravel backend
+### [x] Task 2.3 — Scaffold Laravel backend
 ```bash
 cd backend
 composer create-project laravel/laravel . "^11.0"
@@ -110,7 +110,7 @@ composer require laravel/sanctum guzzlehttp/guzzle
 php artisan install:api
 ```
 
-### Task 2.4 — Configure Laravel to use Supabase Postgres
+### [x] Task 2.4 — Configure Laravel to use Supabase Postgres
 Edit `backend/.env` (create from `.env.example`, then fill in):
 ```env
 APP_NAME="Knowles Connect"
@@ -163,7 +163,7 @@ php artisan tinker
 ```
 **Definition of Done:** returns a `PDO` object with no errors.
 
-### Task 2.6 — Scaffold React frontend
+### [x] Task 2.6 — Scaffold React frontend
 ```bash
 cd ../frontend
 npm create vite@latest . -- --template react
@@ -184,7 +184,7 @@ Create matching `frontend/.env.example` with blank/placeholder values.
 
 Run these as Laravel migrations (`php artisan make:migration ...`) so schema is version-controlled — do **not** hand-edit tables in the Supabase Studio UI except for one-off data fixes.
 
-### Task 3.1 — `events` table
+### [x] Task 3.1 — `events` table
 ```php
 Schema::create('events', function (Blueprint $table) {
     $table->id();
@@ -201,7 +201,7 @@ Schema::create('events', function (Blueprint $table) {
 });
 ```
 
-### Task 3.2 — `metrics` table (the 4 stat cards: Upcoming Events, Training Sessions, Safety Score, ESG Projects)
+### [x] Task 3.2 — `metrics` table (the 4 stat cards: Upcoming Events, Training Sessions, Safety Score, ESG Projects)
 ```php
 Schema::create('metrics', function (Blueprint $table) {
     $table->id();
@@ -214,7 +214,7 @@ Schema::create('metrics', function (Blueprint $table) {
 ```
 `upcoming_events` and `esg_projects` can be **computed** live from the `events`/`esg_projects` tables instead of manually maintained — see Task 4.3. `training_sessions` and `safety_score` are manually updated by HR/EHS admins via the admin panel.
 
-### Task 3.3 — `announcements` table (the blue banner text, supports rotating multiple banners)
+### [x] Task 3.3 — `announcements` table (the blue banner text, supports rotating multiple banners)
 ```php
 Schema::create('announcements', function (Blueprint $table) {
     $table->id();
@@ -225,7 +225,7 @@ Schema::create('announcements', function (Blueprint $table) {
 });
 ```
 
-### Task 3.4 — `settings` table (footer text, company name, weather location, branding)
+### [x] Task 3.4 — `settings` table (footer text, company name, weather location, branding)
 ```php
 Schema::create('settings', function (Blueprint $table) {
     $table->id();
@@ -236,7 +236,7 @@ Schema::create('settings', function (Blueprint $table) {
 ```
 Seed keys: `app_title` ("Knowles Connect"), `app_subtitle`, `footer_message`, `footer_thanks`, `company_name` ("Knowles"), `company_tagline` ("Life above all"), `weather_city`.
 
-### Task 3.5 — `admin_users` (Laravel default `users` table works fine)
+### [x] Task 3.5 — `admin_users` (Laravel default `users` table works fine)
 Use Laravel's default migration, add a `role` column:
 ```php
 $table->string('role')->default('editor'); // 'admin' | 'editor'
@@ -249,7 +249,7 @@ php artisan migrate
 ```
 **Definition of Done:** `php artisan migrate:status` shows all migrations as `Ran`, and tables are visible in Supabase Studio → Table Editor.
 
-### Task 3.7 — Seeders (sample data matching the mockup)
+### [x] Task 3.7 — Seeders (sample data matching the mockup)
 Create `EventSeeder`, `MetricSeeder`, `AnnouncementSeeder`, `SettingSeeder` matching the reference image content (Town Hall Meeting, Family Day Celebration, Annual Company Picnic, Employee Engagement Week, Leadership Summit, Health & Wellness Month), then:
 ```bash
 php artisan db:seed
@@ -259,7 +259,7 @@ php artisan db:seed
 
 ## 4. Laravel Backend — API Layer
 
-### Task 4.1 — Route file `backend/routes/api.php`
+### [x] Task 4.1 — Route file `backend/routes/api.php`
 ```php
 use App\Http\Controllers\Api\{EventController, MetricController, AnnouncementController, SettingController, WeatherController, AuthController};
 
@@ -282,7 +282,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 ```
 
-### Task 4.2 — `EventController@index`
+### [x] Task 4.2 — `EventController@index`
 Returns published, future-or-today events ordered by date, formatted for the card layout:
 ```php
 public function index()
@@ -309,7 +309,7 @@ public function index()
 }
 ```
 
-### Task 4.3 — `MetricController@index` (auto-computes where possible)
+### [x] Task 4.3 — `MetricController@index` (auto-computes where possible)
 ```php
 public function index()
 {
@@ -327,7 +327,7 @@ public function index()
 }
 ```
 
-### Task 4.4 — `WeatherController@current` (server-side cache to avoid rate limits)
+### [x] Task 4.4 — `WeatherController@current` (server-side cache to avoid rate limits)
 Use Laravel's cache (file or database driver) with a 15-minute TTL, calling OpenWeatherMap (or the free Open-Meteo API, which needs no API key — recommended to avoid another secret):
 ```php
 public function current()
@@ -350,7 +350,7 @@ public function current()
 ```
 > Using **Open-Meteo** (free, no key) instead of OpenWeatherMap removes one secret from the whole system — recommended default. Keep the `WEATHER_API_KEY` env var as an optional override if the client later wants OpenWeatherMap's richer icon set.
 
-### Task 4.5 — `SettingController@index` and `AnnouncementController@index`
+### [x] Task 4.5 — `SettingController@index` and `AnnouncementController@index`
 Straightforward key/value and active-list reads — same pattern as above, cached for 5 minutes since they change rarely.
 
 ### Task 4.6 — Image uploads to Supabase Storage
@@ -366,7 +366,7 @@ $imageUrl = config('services.supabase.url') . "/storage/v1/object/public/event-i
 ```
 3. Add `services.supabase.url` / `services.supabase.key` to `backend/config/services.php`, reading from env.
 
-### Task 4.7 — CORS
+### [x] Task 4.7 — CORS
 In `backend/config/cors.php`, allow the frontend origin:
 ```php
 'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:5173')],
@@ -379,7 +379,7 @@ In `backend/config/cors.php`, allow the frontend origin:
 
 ## 5. React Frontend — TV Display
 
-### Task 5.1 — Global layout lock for 1080×1920 portrait
+### [x] Task 5.1 — Global layout lock for 1080×1920 portrait
 In `frontend/src/index.css`, set the app to always render at a fixed portrait canvas that scales to fit any actual screen (important since dev browser ≠ TV panel):
 ```css
 :root {
@@ -398,7 +398,7 @@ html, body, #root { height: 100%; margin: 0; overflow: hidden; background: #0b12
 ```
 In `App.jsx`, compute a scale factor on mount/resize (`Math.min(window.innerWidth/1080, window.innerHeight/1920)`) and apply `transform: scale(...)` plus centering — this guarantees the layout is pixel-identical to the design on any physical TV resolution, then the OS/TV just letterboxes or the browser is launched with `--kiosk --window-size=1080,1920`.
 
-### Task 5.2 — Component tree
+### [x] Task 5.2 — Component tree
 ```
 src/
 ├── App.jsx
@@ -420,7 +420,7 @@ src/
 └── assets/icons/...
 ```
 
-### Task 5.3 — Polling strategy (kiosk must self-heal, never needs a human to refresh)
+### [x] Task 5.3 — Polling strategy (kiosk must self-heal, never needs a human to refresh)
 ```js
 // hooks/usePolling.js
 export function usePolling(fetcher, intervalMs) {
@@ -446,7 +446,7 @@ export function usePolling(fetcher, intervalMs) {
 ```
 Use this for: events (60s), metrics (60s), announcements (5min), weather (15min), settings (15min). Clock ticks locally every second via `useClock`.
 
-### Task 5.4 — Build each section to match the mockup exactly
+### [x] Task 5.4 — Build each section to match the mockup exactly
 - **Header.jsx**: "Knowles Connect" in large blue bold text, subtitle line in gray, circular light-blue button with double-chevron icon top-right (this can later toggle a settings/admin overlay).
 - **AnnouncementBanner.jsx**: full-width rounded rectangle, blue gradient (`linear-gradient(135deg,#1d4ed8,#3b82f6)`), white megaphone icon in a translucent circle on the left, message text wraps to 2 lines.
 - **SidebarNav.jsx**: fixed vertical rail, icons stacked with generous spacing — hamburger, grid (active/highlighted in solid blue rounded square), people, gift, user, people, megaphone, shield, bell, building. Icons from `lucide-react` (`Menu, LayoutGrid, Users, Gift, User, Users2, Megaphone, ShieldCheck, Bell, Building2`).
@@ -457,7 +457,7 @@ Use this for: events (60s), metrics (60s), announcements (5min), weather (15min)
 - **EventCard.jsx**: rounded card, top ~55% is the event image (`object-fit: cover`), overlapping date badge (white rounded box, blue "JUN" + big "02" + "MON") pinned top-left of the image, time + location row with icons, bold title, 1–2 line gray description truncated with ellipsis.
 - **Footer.jsx**: light card, people icon + two-line message on the left, "knowles / Life above all™" logo lockup on the right.
 
-### Task 5.5 — Since a TV can't show unlimited events, add auto-rotation
+### [x] Task 5.5 — Since a TV can't show unlimited events, add auto-rotation
 If more than 6 published events exist, `EventsSection` should paginate through them 6-at-a-time, advancing every 20–30 seconds (configurable via a `settings` key `events_rotation_seconds`), so the "Upcoming Events" metric and the visible grid can stay in sync with the full dataset without needing a "View All Events" click (which is disabled/hidden in kiosk mode, but kept functional for the admin/preview view).
 
 **Definition of Done for Section 5:** `npm run dev`, open `http://localhost:5173`, layout visually matches the reference image at 1080×1920, all data is live from the Laravel API (not mocked), and killing/restarting the backend doesn't crash the frontend (it just keeps last-known-good data and recovers automatically once the API returns).
@@ -526,7 +526,7 @@ VITE_REFRESH_INTERVAL_MS=60000
 ## 10. Post-Build Security Checklist
 
 - [ ] Rotated the Supabase DB password from the one shared during planning.
-- [ ] Confirmed `backend/.env` and `frontend/.env` are listed in `.gitignore` and not present in `git log`.
-- [ ] Confirmed only the Supabase **publishable** key is used anywhere (never a `service_role` secret key) since image upload goes through Laravel, not the browser.
-- [ ] Admin routes require Sanctum auth; public display routes are read-only.
-- [ ] CORS restricted to the known frontend origin(s), not `*`.
+- [x] Confirmed `backend/.env` and `frontend/.env` are listed in `.gitignore` and not present in `git log`.
+- [x] Confirmed only the Supabase **publishable** key is used anywhere (never a `service_role` secret key) since image upload goes through Laravel, not the browser.
+- [x] Admin routes require Sanctum auth; public display routes are read-only.
+- [x] CORS restricted to the known frontend origin(s), not `*`.
