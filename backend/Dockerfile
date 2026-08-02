@@ -66,16 +66,34 @@ RUN { \
     echo 'opcache.max_accelerated_files = 20000'; \
     echo 'opcache.revalidate_freq = 0'; \
     echo 'opcache.validate_timestamps = 0'; \
+    echo 'variables_order = "EGPCS"'; \
   } > /usr/local/etc/php/conf.d/zzz_production.ini
 
-RUN composer run-script post-autoload-dump || true
+RUN BUILD_APP_KEY=$(php -r 'echo "base64:".base64_encode(random_bytes(32));') \
+ && ( [ -f .env ] || cp .env.example .env ) \
+ && sed -i "s|^APP_KEY=.*|APP_KEY=\"$BUILD_APP_KEY\"|" .env \
+ && grep -q '^APP_ENV=' .env || echo 'APP_ENV="production"' >> .env \
+ && APP_KEY="$BUILD_APP_KEY" APP_ENV=production composer run-script post-autoload-dump || true
+
+RUN { \
+    echo "<VirtualHost *:10000>"; \
+    echo "  ServerName localhost"; \
+    echo "  DocumentRoot /var/www/html/public"; \
+    echo "  PassEnv APP_KEY APP_ENV APP_DEBUG APP_URL DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD DB_CONNECTION DB_SSLMODE SUPABASE_URL SUPABASE_PUBLISHABLE_KEY FRONTEND_URL WEATHER_API_KEY WEATHER_LAT WEATHER_LON WEATHER_CITY LOG_CHANNEL LOG_LEVEL SESSION_DRIVER CACHE_STORE QUEUE_CONNECTION APP_TIMEZONE"; \
+    echo "  <Directory /var/www/html/public>"; \
+    echo "    AllowOverride All"; \
+    echo "    Require all granted"; \
+    echo "    FallbackResource /index.php"; \
+    echo "  </Directory>"; \
+    echo "  ErrorLog \${APACHE_LOG_DIR}/error.log"; \
+    echo "  CustomLog \${APACHE_LOG_DIR}/access.log combined"; \
+    echo "</VirtualHost>"; \
+  } > /etc/apache2/sites-available/000-default.conf
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
- && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
  && sed -i 's/Listen 80/Listen 10000/' /etc/apache2/ports.conf \
- && sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:10000>/' /etc/apache2/sites-available/000-default.conf \
- && a2enmod rewrite headers
+ && a2enmod rewrite headers env
 
 COPY docker-entrypoint.sh /usr/local/bin/
 COPY write-env.php /usr/local/bin/
@@ -87,6 +105,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
  && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 STOPSIGNAL SIGTERM
+ENV APP_ENV=production
+ENV APP_KEY=""
 
 EXPOSE 10000
 
