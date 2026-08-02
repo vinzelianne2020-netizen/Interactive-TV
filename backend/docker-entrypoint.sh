@@ -7,15 +7,23 @@ if [ ! -f /var/www/html/.env ]; then
     chown www-data:www-data /var/www/html/.env
 fi
 
-if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ] || grep -q '^APP_KEY=$' /var/www/html/.env; then
+quote_env_value() {
+    val="$1"
+    val=$(printf '%s' "$val" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\$/\\$/g')
+    printf '"%s"' "$val"
+}
+
+if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ] || grep -q '^APP_KEY=""$' /var/www/html/.env || grep -q '^APP_KEY=$' /var/www/html/.env; then
     echo "APP_KEY not set, generating one..."
     NEW_KEY=$(php -r 'echo "base64:".base64_encode(random_bytes(32));')
     echo "Generated APP_KEY: $NEW_KEY"
-    sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" /var/www/html/.env
+    Q=$(quote_env_value "$NEW_KEY")
+    sed -i "s|^APP_KEY=.*|APP_KEY=$Q|" /var/www/html/.env
     export APP_KEY="$NEW_KEY"
 else
     echo "Using provided APP_KEY from environment"
-    sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" /var/www/html/.env
+    Q=$(quote_env_value "$APP_KEY")
+    sed -i "s|^APP_KEY=.*|APP_KEY=$Q|" /var/www/html/.env
 fi
 
 echo "Injecting runtime env vars into .env..."
@@ -27,11 +35,11 @@ for var in APP_NAME APP_ENV APP_DEBUG APP_URL APP_TIMEZONE \
     LOG_CHANNEL LOG_LEVEL SESSION_DRIVER CACHE_STORE QUEUE_CONNECTION; do
     eval "VALUE=\${$var:-}"
     if [ -n "$VALUE" ]; then
-        ESCAPED_VALUE=$(printf '%s' "$VALUE" | sed 's|[&/]|\\&|g')
+        Q=$(quote_env_value "$VALUE")
         if grep -q "^${var}=" /var/www/html/.env; then
-            sed -i "s|^${var}=.*|${var}=$ESCAPED_VALUE|" /var/www/html/.env
+            sed -i "s|^${var}=.*|${var}=$Q|" /var/www/html/.env
         else
-            echo "${var}=$VALUE" >> /var/www/html/.env
+            echo "${var}=$Q" >> /var/www/html/.env
         fi
     fi
 done

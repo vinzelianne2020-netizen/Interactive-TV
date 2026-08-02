@@ -32,3 +32,6 @@ yarn-error.log
 Dockerfile
 .dockerignore
 docker-compose.yml
+php.ini
+getPdo()
+supabase/.temp
