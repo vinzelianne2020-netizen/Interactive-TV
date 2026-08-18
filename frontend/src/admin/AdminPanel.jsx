@@ -3,7 +3,6 @@ import {
   CalendarDays,
   CircleAlert,
   FileText,
-  ImagePlus,
   LayoutGrid,
   LogOut,
   Megaphone,
@@ -172,11 +171,31 @@ function sectionIconTone(section) {
   return SECTION_DEFS[section]?.tone ?? 'blue';
 }
 
+function buildValidationSummary(errorBag) {
+  if (!errorBag || typeof errorBag !== 'object') {
+    return null;
+  }
+  const flat = [];
+  for (const [field, messages] of Object.entries(errorBag)) {
+    if (Array.isArray(messages)) {
+      for (const message of messages) {
+        if (typeof message === 'string') {
+          flat.push({ field, message });
+        }
+      }
+    }
+  }
+  return flat;
+}
+
 export function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const [authForm, setAuthForm] = useState(DEFAULT_AUTH);
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [authFieldErrors, setAuthFieldErrors] = useState({});
   const [activeSection, setActiveSection] = useState('events');
   const [workspace, setWorkspace] = useState({
     events: [],
@@ -191,6 +210,7 @@ export function AdminPanel() {
   const [imageFile, setImageFile] = useState(null);
   const [saveMessage, setSaveMessage] = useState('');
   const [saveError, setSaveError] = useState('');
+  const [formFieldErrors, setFormFieldErrors] = useState({});
   const [loadingAction, setLoadingAction] = useState(false);
 
   const greeting = useMemo(() => {
@@ -203,18 +223,54 @@ export function AdminPanel() {
 
   const publicMetrics = useMemo(() => {
     return {
-      upcoming_events: 0,
-      training_sessions: 0,
-      safety_score: '0%',
-      esg_projects: 0,
+      upcoming_events: workspace.events.filter((event) => {
+        if (!event?.event_date) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return new Date(event.event_date) >= today;
+      }).length,
+      training_sessions: Number(
+        workspace.metrics.find((item) => item?.key === 'training_sessions')?.value ?? 0,
+      ),
+      safety_score: workspace.metrics.find((item) => item?.key === 'safety_score')?.value ?? '0%',
+      esg_projects: Number(
+        workspace.metrics.find((item) => item?.key === 'esg_projects')?.value ?? 0,
+      ),
     };
-  }, []);
+  }, [workspace]);
 
   const currentRecords = workspace[activeSection] ?? [];
   const selectedRecord =
     activeSection === 'settings'
       ? currentRecords.find((record) => record.key === selectedRecordId) ?? null
       : currentRecords.find((record) => String(record.id) === String(selectedRecordId)) ?? null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrap() {
+      try {
+        await initCsrfCookie();
+        const { data } = await client.get('/auth/me');
+        if (!cancelled && data?.data) {
+          setCurrentUser(data.data);
+          setIsAuthenticated(true);
+        }
+      } catch (_error) {
+        // No valid session: let the admin sign in manually.
+      } finally {
+        if (!cancelled) {
+          setIsBootstrapping(false);
+        }
+      }
+    }
+
+    void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -276,9 +332,16 @@ export function AdminPanel() {
         settings: normalizeSettings(settingsResponse.data?.data ?? {}),
       });
     } catch (thrownError) {
-      setWorkspaceError(
-        thrownError?.response?.data?.message ?? 'Unable to load admin data right now. Refresh and try again.',
-      );
+      const status = thrownError?.response?.status;
+      if (status === 401 || status === 403) {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setWorkspaceError('Session expired. Please sign in again.');
+      } else {
+        setWorkspaceError(
+          thrownError?.response?.data?.message ?? 'Unable to load admin data right now. Refresh and try again.',
+        );
+      }
     } finally {
       setWorkspaceLoading(false);
     }
@@ -288,18 +351,29 @@ export function AdminPanel() {
     event.preventDefault();
     setIsSubmittingAuth(true);
     setAuthError('');
+    setAuthFieldErrors({});
 
     try {
       await initCsrfCookie();
-      await client.post('/auth/login', authForm);
+      const loginResponse = await client.post('/auth/login', authForm);
+      setCurrentUser(loginResponse.data?.data ?? null);
       setIsAuthenticated(true);
+      setSaveMessage('Signed in successfully.');
+      setAuthForm(DEFAULT_AUTH);
       await loadWorkspace();
     } catch (thrownError) {
-      setAuthError(
-        thrownError?.response?.data?.message ?? 'Unable to sign in right now. Check credentials and try again.',
-      );
+      const status = thrownError?.response?.status;
+      if (status === 429) {
+        setAuthError('Too many failed attempts. Please wait a moment and try again.');
+      } else {
+        setAuthError(
+          thrownError?.response?.data?.message ?? 'Unable to sign in right now. Check credentials and try again.',
+        );
+      }
+      setAuthFieldErrors(thrownError?.response?.data?.errors ?? {});
     } finally {
       setIsSubmittingAuth(false);
+      setTimeout(() => setSaveMessage(''), 2500);
     }
   }
 
@@ -310,10 +384,13 @@ export function AdminPanel() {
       // Keep the UI responsive even if the backend session is already gone.
     } finally {
       setIsAuthenticated(false);
+      setCurrentUser(null);
       setWorkspace({ events: [], metrics: [], announcements: [], settings: [] });
       setSelectedRecordId(null);
       setDraft(createEmptyDraft('events'));
       setImageFile(null);
+      setSaveMessage('Signed out successfully.');
+      setTimeout(() => setSaveMessage(''), 2500);
     }
   }
 
@@ -321,6 +398,7 @@ export function AdminPanel() {
     setActiveSection(section);
     setSaveMessage('');
     setSaveError('');
+    setFormFieldErrors({});
   }
 
   function handleSelectRecord(record) {
@@ -329,6 +407,7 @@ export function AdminPanel() {
     setImageFile(null);
     setSaveMessage('');
     setSaveError('');
+    setFormFieldErrors({});
   }
 
   function handleCreateNew() {
@@ -337,6 +416,7 @@ export function AdminPanel() {
     setImageFile(null);
     setSaveMessage('');
     setSaveError('');
+    setFormFieldErrors({});
   }
 
   async function handleSaveRecord(event) {
@@ -344,6 +424,7 @@ export function AdminPanel() {
     setLoadingAction(true);
     setSaveMessage('');
     setSaveError('');
+    setFormFieldErrors({});
 
     try {
       if (activeSection === 'events') {
@@ -409,13 +490,26 @@ export function AdminPanel() {
       await loadWorkspace();
       if (activeSection !== 'settings') {
         setSelectedRecordId(null);
+        setDraft(createEmptyDraft(activeSection));
+        setImageFile(null);
       }
     } catch (thrownError) {
-      setSaveError(
-        thrownError?.response?.data?.message ?? 'Unable to save this item right now. Check the form and try again.',
-      );
+      const status = thrownError?.response?.status;
+      if (status === 401 || status === 403) {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setSaveError('Session expired. Please sign in again.');
+      } else {
+        setSaveError(
+          thrownError?.response?.data?.message ?? 'Unable to save this item right now. Check the form and try again.',
+        );
+      }
+      setFormFieldErrors(thrownError?.response?.data?.errors ?? {});
     } finally {
       setLoadingAction(false);
+      if (saveMessage) {
+        setTimeout(() => setSaveMessage(''), 2500);
+      }
     }
   }
 
@@ -447,35 +541,71 @@ export function AdminPanel() {
       setSaveMessage('Item deleted.');
       await loadWorkspace();
     } catch (thrownError) {
-      setSaveError(
-        thrownError?.response?.data?.message ?? 'Unable to delete this item right now. Try again.',
-      );
+      const status = thrownError?.response?.status;
+      if (status === 401 || status === 403) {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setSaveError('Session expired. Please sign in again.');
+      } else {
+        setSaveError(
+          thrownError?.response?.data?.message ?? 'Unable to delete this item right now. Try again.',
+        );
+      }
     } finally {
       setLoadingAction(false);
+      if (saveMessage) {
+        setTimeout(() => setSaveMessage(''), 2500);
+      }
     }
   }
 
-  if (!isAuthenticated) {
+  if (isBootstrapping) {
     return (
       <div className="admin-shell admin-shell--auth">
         <section className="admin-auth-card">
           <div className="admin-auth-copy">
             <p className="eyebrow">Admin access</p>
+            <h1>Checking session…</h1>
+            <p>One moment while we restore your admin workspace.</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    const authValidation = buildValidationSummary(authFieldErrors);
+    return (
+      <div className="admin-shell admin-shell--auth admin-shell--responsive">
+        <section className="admin-auth-card admin-auth-card--responsive">
+          <div className="admin-auth-copy">
+            <p className="eyebrow">Admin access</p>
             <h1>Knowles Connect control center</h1>
             <p>Sign in to manage events, metrics, announcements, and settings from one place.</p>
+            {currentUser ? (
+              <p className="admin-auth-copy__hint">
+                Signed in as <strong>{currentUser.email}</strong> · {currentUser.role}
+              </p>
+            ) : null}
           </div>
 
-          <form className="admin-auth-form" onSubmit={handleLogin}>
+          <form className="admin-auth-form admin-auth-form--responsive" onSubmit={handleLogin} noValidate>
             <label>
               <span>Email</span>
               <input
                 type="email"
                 value={authForm.email}
                 onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
-                placeholder="admin@knowles.com"
+                placeholder="knowlesadmin@knowles.com"
                 autoComplete="email"
                 required
+                maxLength={255}
+                aria-invalid={Boolean(authFieldErrors?.email)}
+                aria-describedby={authFieldErrors?.email ? 'auth-error-email' : undefined}
               />
+              {authFieldErrors?.email ? (
+                <p className="admin-field-error" id="auth-error-email">{authFieldErrors.email[0]}</p>
+              ) : null}
             </label>
 
             <label>
@@ -487,8 +617,26 @@ export function AdminPanel() {
                 placeholder="Enter password"
                 autoComplete="current-password"
                 required
+                minLength={8}
+                maxLength={255}
+                aria-invalid={Boolean(authFieldErrors?.password)}
+                aria-describedby={authFieldErrors?.password ? 'auth-error-password' : undefined}
               />
+              {authFieldErrors?.password ? (
+                <p className="admin-field-error" id="auth-error-password">{authFieldErrors.password[0]}</p>
+              ) : null}
             </label>
+
+            {authValidation && authValidation.length > 0 ? (
+              <ul className="admin-auth-error-list">
+                {authValidation.map((item) => (
+                  <li key={`${item.field}-${item.message}`}>
+                    <CircleAlert size={14} />
+                    <span>{item.message}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
             {authError ? <p className="admin-auth-error">{authError}</p> : null}
 
@@ -517,15 +665,21 @@ export function AdminPanel() {
       : `Editing ${SECTION_DEFS[activeSection].label.slice(0, -1)}`;
 
   return (
-    <div className="admin-shell admin-shell--workspace">
-      <aside className="admin-sidebar">
+    <div className="admin-shell admin-shell--workspace admin-shell--responsive">
+      <aside className="admin-sidebar admin-sidebar--responsive">
         <div>
           <p className="eyebrow">Phase 2 scaffold</p>
           <h2>Control center</h2>
           <p className="admin-sidebar__subtitle">{greeting}</p>
+          {currentUser ? (
+            <p className="admin-sidebar__whoami">
+              <ShieldCheck size={14} strokeWidth={2.4} />
+              <span>{currentUser.name ?? currentUser.email}</span>
+            </p>
+          ) : null}
         </div>
 
-        <nav className="admin-rail" aria-label="Admin sections">
+        <nav className="admin-rail admin-rail--responsive" aria-label="Admin sections">
           {ADMIN_TABS.map(({ key, label, icon: Icon, tone: itemTone }) => (
             <button
               key={key}
@@ -546,8 +700,8 @@ export function AdminPanel() {
         </button>
       </aside>
 
-      <main className="admin-main">
-        <header className="admin-main__header">
+      <main className="admin-main admin-main--responsive">
+        <header className="admin-main__header admin-main__header--responsive">
           <div>
             <p className="eyebrow">Workspace overview</p>
             <h1>Manage the public display</h1>
@@ -558,7 +712,14 @@ export function AdminPanel() {
           </button>
         </header>
 
-        <section className="admin-grid">
+        {saveMessage ? (
+          <div className="admin-status admin-status--success" role="status">
+            <Save size={18} strokeWidth={2.4} />
+            <span>{saveMessage}</span>
+          </div>
+        ) : null}
+
+        <section className="admin-grid admin-grid--responsive">
           <article className="admin-card admin-card--blue">
             <div className="admin-card__icon">
               <CalendarDays size={22} strokeWidth={2.4} />
@@ -592,9 +753,9 @@ export function AdminPanel() {
           </article>
         </section>
 
-        <section className="admin-panels">
-          <article className="admin-panel">
-            <div className="admin-panel__header">
+        <section className="admin-panels admin-panels--responsive">
+          <article className="admin-panel admin-panel--responsive">
+            <div className="admin-panel__header admin-panel__header--responsive">
               <div>
                 <p className="eyebrow">{SECTION_DEFS[activeSection].label}</p>
                 <h2>{workspaceLoading ? 'Loading records...' : `${currentRecords.length} record(s)`}</h2>
@@ -606,27 +767,31 @@ export function AdminPanel() {
             </div>
 
             {workspaceError ? (
-              <div className="admin-status admin-status--error">
+              <div className="admin-status admin-status--error" role="alert">
                 <CircleAlert size={18} strokeWidth={2.4} />
                 <span>{workspaceError}</span>
               </div>
             ) : null}
 
-            {saveMessage ? (
-              <div className="admin-status admin-status--success">
-                <Save size={18} strokeWidth={2.4} />
-                <span>{saveMessage}</span>
-              </div>
-            ) : null}
-
             {saveError ? (
-              <div className="admin-status admin-status--error">
+              <div className="admin-status admin-status--error" role="alert">
                 <CircleAlert size={18} strokeWidth={2.4} />
                 <span>{saveError}</span>
               </div>
             ) : null}
 
-            <div className="admin-list admin-list--records">
+            {formFieldErrors && Object.keys(formFieldErrors).length > 0 ? (
+              <div className="admin-status admin-status--error admin-status--list" role="alert">
+                <CircleAlert size={18} strokeWidth={2.4} />
+                <ul>
+                  {buildValidationSummary(formFieldErrors)?.slice(0, 6).map((item) => (
+                    <li key={`${item.field}-${item.message}`}>{item.field}: {item.message}</li>
+                  )) ?? null}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className="admin-list admin-list--records admin-list--responsive">
               {currentRecords.map((record) => {
                 const recordId = getRecordId(activeSection, record);
                 const isSelected = String(recordId) === String(selectedRecordId);
@@ -658,21 +823,21 @@ export function AdminPanel() {
             </div>
           </article>
 
-          <article className="admin-panel">
-            <div className="admin-panel__header">
+          <article className="admin-panel admin-panel--responsive">
+            <div className="admin-panel__header admin-panel__header--responsive">
               <div>
                 <p className="eyebrow">Editor</p>
                 <h2>{selectedLabel}</h2>
               </div>
               {selectedRecordId && activeSection !== 'settings' ? (
-                <button type="button" className="admin-button admin-button--ghost" onClick={handleDeleteRecord}>
+                <button type="button" className="admin-button admin-button--ghost" onClick={handleDeleteRecord} disabled={loadingAction}>
                   <Trash2 size={18} strokeWidth={2.4} />
                   Delete
                 </button>
               ) : null}
             </div>
 
-            <form className="admin-form" onSubmit={handleSaveRecord}>
+            <form className="admin-form admin-form--responsive" onSubmit={handleSaveRecord} noValidate>
               {activeSection === 'events' ? (
                 <>
                   <label>
@@ -682,8 +847,11 @@ export function AdminPanel() {
                       value={draft.title}
                       onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
                       placeholder="Town Hall Meeting"
+                      maxLength={255}
                       required
+                      aria-invalid={Boolean(formFieldErrors?.title)}
                     />
+                    {formFieldErrors?.title ? <p className="admin-field-error">{formFieldErrors.title[0]}</p> : null}
                   </label>
 
                   <label>
@@ -693,10 +861,12 @@ export function AdminPanel() {
                       value={draft.description}
                       onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
                       placeholder="Company updates, plans, and open forum."
+                      maxLength={5000}
                     />
+                    {formFieldErrors?.description ? <p className="admin-field-error">{formFieldErrors.description[0]}</p> : null}
                   </label>
 
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Date</span>
                       <input
@@ -704,7 +874,9 @@ export function AdminPanel() {
                         value={draft.event_date}
                         onChange={(event) => setDraft((current) => ({ ...current, event_date: event.target.value }))}
                         required
+                        aria-invalid={Boolean(formFieldErrors?.event_date)}
                       />
+                      {formFieldErrors?.event_date ? <p className="admin-field-error">{formFieldErrors.event_date[0]}</p> : null}
                     </label>
 
                     <label>
@@ -714,11 +886,13 @@ export function AdminPanel() {
                         value={draft.event_time}
                         onChange={(event) => setDraft((current) => ({ ...current, event_time: event.target.value }))}
                         required
+                        aria-invalid={Boolean(formFieldErrors?.event_time)}
                       />
+                      {formFieldErrors?.event_time ? <p className="admin-field-error">{formFieldErrors.event_time[0]}</p> : null}
                     </label>
                   </div>
 
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Location</span>
                       <input
@@ -726,7 +900,9 @@ export function AdminPanel() {
                         value={draft.location}
                         onChange={(event) => setDraft((current) => ({ ...current, location: event.target.value }))}
                         placeholder="Conference Hall A"
+                        maxLength={255}
                       />
+                      {formFieldErrors?.location ? <p className="admin-field-error">{formFieldErrors.location[0]}</p> : null}
                     </label>
 
                     <label>
@@ -736,11 +912,13 @@ export function AdminPanel() {
                         value={draft.category}
                         onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
                         placeholder="Company Event"
+                        maxLength={255}
                       />
+                      {formFieldErrors?.category ? <p className="admin-field-error">{formFieldErrors.category[0]}</p> : null}
                     </label>
                   </div>
 
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Sort order</span>
                       <input
@@ -750,7 +928,9 @@ export function AdminPanel() {
                           setDraft((current) => ({ ...current, sort_order: Number(event.target.value) }))
                         }
                         min="0"
+                        max="10000"
                       />
+                      {formFieldErrors?.sort_order ? <p className="admin-field-error">{formFieldErrors.sort_order[0]}</p> : null}
                     </label>
 
                     <label>
@@ -760,6 +940,7 @@ export function AdminPanel() {
                         accept="image/*"
                         onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
                       />
+                      {formFieldErrors?.image ? <p className="admin-field-error">{formFieldErrors.image[0]}</p> : null}
                     </label>
                   </div>
 
@@ -776,7 +957,7 @@ export function AdminPanel() {
 
               {activeSection === 'metrics' ? (
                 <>
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Key</span>
                       <input
@@ -784,8 +965,11 @@ export function AdminPanel() {
                         value={draft.key}
                         onChange={(event) => setDraft((current) => ({ ...current, key: event.target.value }))}
                         placeholder="training_sessions"
+                        maxLength={100}
                         required
+                        aria-invalid={Boolean(formFieldErrors?.key)}
                       />
+                      {formFieldErrors?.key ? <p className="admin-field-error">{formFieldErrors.key[0]}</p> : null}
                     </label>
 
                     <label>
@@ -795,12 +979,15 @@ export function AdminPanel() {
                         value={draft.label}
                         onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
                         placeholder="Training Sessions"
+                        maxLength={255}
                         required
+                        aria-invalid={Boolean(formFieldErrors?.label)}
                       />
+                      {formFieldErrors?.label ? <p className="admin-field-error">{formFieldErrors.label[0]}</p> : null}
                     </label>
                   </div>
 
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Value</span>
                       <input
@@ -808,8 +995,11 @@ export function AdminPanel() {
                         value={draft.value}
                         onChange={(event) => setDraft((current) => ({ ...current, value: event.target.value }))}
                         placeholder="12"
+                        maxLength={255}
                         required
+                        aria-invalid={Boolean(formFieldErrors?.value)}
                       />
+                      {formFieldErrors?.value ? <p className="admin-field-error">{formFieldErrors.value[0]}</p> : null}
                     </label>
 
                     <label>
@@ -819,7 +1009,9 @@ export function AdminPanel() {
                         value={draft.icon}
                         onChange={(event) => setDraft((current) => ({ ...current, icon: event.target.value }))}
                         placeholder="Users2"
+                        maxLength={100}
                       />
+                      {formFieldErrors?.icon ? <p className="admin-field-error">{formFieldErrors.icon[0]}</p> : null}
                     </label>
                   </div>
                 </>
@@ -834,11 +1026,14 @@ export function AdminPanel() {
                       value={draft.message}
                       onChange={(event) => setDraft((current) => ({ ...current, message: event.target.value }))}
                       placeholder="Stay informed with company announcements..."
+                      maxLength={1000}
                       required
+                      aria-invalid={Boolean(formFieldErrors?.message)}
                     />
+                    {formFieldErrors?.message ? <p className="admin-field-error">{formFieldErrors.message[0]}</p> : null}
                   </label>
 
-                  <div className="admin-form__grid">
+                  <div className="admin-form__grid admin-form__grid--responsive">
                     <label>
                       <span>Sort order</span>
                       <input
@@ -848,7 +1043,9 @@ export function AdminPanel() {
                           setDraft((current) => ({ ...current, sort_order: Number(event.target.value) }))
                         }
                         min="0"
+                        max="10000"
                       />
+                      {formFieldErrors?.sort_order ? <p className="admin-field-error">{formFieldErrors.sort_order[0]}</p> : null}
                     </label>
 
                     <label className="admin-toggle-row admin-toggle-row--compact">
@@ -872,8 +1069,11 @@ export function AdminPanel() {
                       value={draft.key}
                       onChange={(event) => setDraft((current) => ({ ...current, key: event.target.value }))}
                       placeholder="footer_message"
+                      maxLength={100}
                       required
+                      aria-invalid={Boolean(formFieldErrors?.key)}
                     />
+                    {formFieldErrors?.key ? <p className="admin-field-error">{formFieldErrors.key[0]}</p> : null}
                   </label>
 
                   <label>
@@ -883,18 +1083,21 @@ export function AdminPanel() {
                       value={draft.value}
                       onChange={(event) => setDraft((current) => ({ ...current, value: event.target.value }))}
                       placeholder="Together, we build a stronger, safer, and more connected workplace."
+                      maxLength={5000}
                       required
+                      aria-invalid={Boolean(formFieldErrors?.value)}
                     />
+                    {formFieldErrors?.value ? <p className="admin-field-error">{formFieldErrors.value[0]}</p> : null}
                   </label>
                 </>
               ) : null}
 
-              <div className="admin-form__actions">
+              <div className="admin-form__actions admin-form__actions--responsive">
                 <button type="submit" className="admin-button" disabled={loadingAction}>
                   <Save size={18} strokeWidth={2.4} />
                   {loadingAction ? 'Saving...' : 'Save changes'}
                 </button>
-                <button type="button" className="admin-button admin-button--ghost" onClick={handleCreateNew}>
+                <button type="button" className="admin-button admin-button--ghost" onClick={handleCreateNew} disabled={loadingAction}>
                   <Plus size={18} strokeWidth={2.4} />
                   Clear form
                 </button>
@@ -903,15 +1106,15 @@ export function AdminPanel() {
           </article>
         </section>
 
-        <section className="admin-panels">
-          <article className="admin-panel">
+        <section className="admin-panels admin-panels--responsive">
+          <article className="admin-panel admin-panel--responsive">
             <div className="admin-panel__header">
               <div>
                 <p className="eyebrow">Quick actions</p>
                 <h2>Start here</h2>
               </div>
             </div>
-            <div className="admin-action-list">
+            <div className="admin-action-list admin-action-list--responsive">
               {QUICK_ACTIONS.map((action) => (
                 <button key={action} type="button" className="admin-action-chip">
                   {action}
@@ -921,14 +1124,14 @@ export function AdminPanel() {
             </div>
           </article>
 
-          <article className="admin-panel">
+          <article className="admin-panel admin-panel--responsive">
             <div className="admin-panel__header">
               <div>
                 <p className="eyebrow">Recent content</p>
                 <h2>Latest updates</h2>
               </div>
             </div>
-            <div className="admin-list">
+            <div className="admin-list admin-list--responsive">
               {currentRecords.slice(0, 3).map((record) => (
                 <div key={String(getRecordId(activeSection, record))} className="admin-list__item">
                   <div className={`admin-list__bullet admin-list__bullet--${tone}`} aria-hidden="true" />
@@ -940,19 +1143,27 @@ export function AdminPanel() {
                   </div>
                 </div>
               ))}
+              {currentRecords.length === 0 ? (
+                <div className="admin-empty-state">
+                  <FileText size={20} strokeWidth={2.4} />
+                  <p>Create your first {SECTION_DEFS[activeSection].label.toLowerCase()} entry to start publishing.</p>
+                </div>
+              ) : null}
             </div>
           </article>
         </section>
 
-        <section className="admin-footer-card">
+        <section className="admin-footer-card admin-footer-card--responsive">
           <div className="admin-footer-card__copy">
             <ShieldCheck size={20} strokeWidth={2.4} />
             <div>
-              <p className="admin-footer-card__title">Protected by Sanctum</p>
-              <p className="admin-footer-card__meta">Public display remains read-only.</p>
+              <p className="admin-footer-card__title">Protected by role-based access control</p>
+              <p className="admin-footer-card__meta">
+                All admin actions are validated, sanitized, and logged. Public display remains read-only.
+              </p>
             </div>
           </div>
-          <p className="admin-footer-card__note">Use this panel later for full CRUD flows.</p>
+          <p className="admin-footer-card__note">Use this panel for full CRUD across events, metrics, announcements, and settings.</p>
         </section>
       </main>
     </div>

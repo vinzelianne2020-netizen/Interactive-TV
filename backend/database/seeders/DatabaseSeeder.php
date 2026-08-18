@@ -5,10 +5,14 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
+
+    final public const DEFAULT_ADMIN_EMAIL = 'knowlesadmin@knowles.com';
+    final public const DEFAULT_ADMIN_PASSWORD = '@Knowles_admin2026';
 
     /**
      * Seed the application's database.
@@ -22,9 +26,35 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
         ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $admin = User::query()->where('email', self::DEFAULT_ADMIN_EMAIL)->first();
+        if (! $admin) {
+            User::query()->create([
+                'name' => 'Knowles Administrator',
+                'email' => self::DEFAULT_ADMIN_EMAIL,
+                'password' => Hash::make(self::DEFAULT_ADMIN_PASSWORD, [
+                    'rounds' => (int) env('BCRYPT_ROUNDS', 12),
+                ]),
+                'email_verified_at' => now(),
+                'role' => User::ROLE_ADMIN,
+            ]);
+        } elseif (! $admin->isAdmin()) {
+            $admin->update(['role' => User::ROLE_ADMIN]);
+            if (! $admin->email_verified_at) {
+                $admin->update(['email_verified_at' => now()]);
+            }
+            // Always ensure seeded admin's password matches the requested one.
+            $admin->update([
+                'password' => Hash::make(self::DEFAULT_ADMIN_PASSWORD, [
+                    'rounds' => (int) env('BCRYPT_ROUNDS', 12),
+                ]),
+            ]);
+        }
+
+        if (User::query()->where('email', 'test@example.com')->doesntExist()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
     }
 }

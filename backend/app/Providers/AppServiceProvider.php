@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\Api\AuthController;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('auth.login', function (Request $request) {
+            return Limit::perMinutes(
+                minutes: 2,
+                maxAttempts: AuthController::MAX_LOGIN_ATTEMPTS,
+            )->by(sha1(($request->input('email') ?? '').'|'.($request->ip() ?? '')));
+        });
     }
 }

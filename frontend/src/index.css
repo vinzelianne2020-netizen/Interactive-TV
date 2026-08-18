@@ -2916,3 +2916,228 @@ button:disabled {
   color: #5f7093;
   font-weight: 600;
 }
+
+.admin-field-error {
+  margin: 6px 2px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.admin-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  color: #15803d;
+  font-weight: 700;
+}
+
+.admin-user-badge strong {
+  color: #166534;
+}
+
+.admin-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.28);
+}
+
+.admin-validation-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.admin-banner {
+  width: 100%;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-weight: 700;
+}
+
+.admin-banner--success {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.18);
+}
+
+.admin-banner--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.18);
+}
+
+.admin-banner--info {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+@media (max-width: 1080px) {
+  .admin-shell--responsive.admin-shell--workspace {
+    grid-template-columns: 1fr;
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .admin-sidebar--responsive {
+    padding: 18px;
+  }
+
+  .admin-rail--responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-grid--responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-panels--responsive {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form__grid--responsive {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-main__header--responsive {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-footer-card--responsive {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-shell--responsive {
+    padding: 18px !important;
+  }
+
+  .admin-shell--responsive.admin-shell--auth {
+    place-items: start;
+    padding-top: 28px;
+  }
+
+  .admin-auth-card--responsive {
+    grid-template-columns: 1fr;
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .admin-auth-card--responsive .admin-auth-copy,
+  .admin-auth-card--responsive .admin-auth-form {
+    padding: 18px;
+  }
+
+  .admin-auth-card--responsive h1,
+  .admin-main__header h1 {
+    font-size: 2.1rem;
+  }
+
+  .admin-grid--responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .admin-card {
+    padding: 22px;
+  }
+
+  .admin-card h1 {
+    font-size: 2.1rem;
+  }
+
+  .admin-panel--responsive {
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .admin-panel--responsive h2 {
+    font-size: 1.4rem;
+  }
+
+  .admin-form__grid--responsive {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-rail--responsive {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-action-list--responsive {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-action-list--responsive .admin-action-chip {
+    justify-content: center;
+  }
+
+  .admin-list--responsive .admin-list__item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-sidebar--responsive {
+    padding: 18px;
+  }
+
+  .admin-sidebar--responsive h2 {
+    font-size: 1.5rem;
+  }
+
+  .admin-main--responsive {
+    gap: 12px;
+  }
+
+  .admin-main__header--responsive {
+    padding: 20px;
+    gap: 12px;
+  }
+
+  .admin-footer-card--responsive {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-grid--responsive {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-shell--responsive.admin-shell--auth {
+    padding: 12px !important;
+  }
+
+  .admin-auth-card--responsive {
+    border-radius: 22px;
+  }
+
+  .admin-button {
+    width: 100%;
+  }
+}
