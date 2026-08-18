@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { client } from '../api/client';
+import { client, initCsrfCookie } from '../api/client';
 
 const SECTION_DEFS = {
   events: {
@@ -290,7 +290,7 @@ export function AdminPanel() {
     setAuthError('');
 
     try {
-      await client.get('/sanctum/csrf-cookie');
+      await initCsrfCookie();
       await client.post('/auth/login', authForm);
       setIsAuthenticated(true);
       await loadWorkspace();

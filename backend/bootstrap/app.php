@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->trustProxies(
+            at: env('TRUSTED_PROXIES') === '*' ? '*' : array_filter(array_map('trim', explode(',', env('TRUSTED_PROXIES', ''))))
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
