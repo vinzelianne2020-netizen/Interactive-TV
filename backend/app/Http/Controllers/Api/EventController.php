@@ -20,9 +20,10 @@ class EventController extends Controller
     public function index(): JsonResponse
     {
         $events = Event::where('is_published', true)
-            ->whereDate('event_date', '>=', now()->subDay())
+            ->orderByRaw("event_date >= ? desc", [now()->toDateString()])
             ->orderBy('event_date')
             ->orderBy('sort_order')
+            ->limit(50)
             ->get()
             ->map(fn (Event $event) => $this->formatEvent($event));
 
