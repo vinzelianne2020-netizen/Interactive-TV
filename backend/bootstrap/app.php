@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAdmin;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
         ]);
 
+        $middleware->statefulApi();
         $middleware->trustProxies(
             at: env('TRUSTED_PROXIES') === '*' ? '*' : array_filter(array_map('trim', explode(',', env('TRUSTED_PROXIES', ''))))
         );
@@ -32,7 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+                $status = $e instanceof AuthenticationException
+                    ? 401
+                    : (method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500);
                 if ($e instanceof ValidationException) {
                     $status = 422;
                 }

@@ -37,12 +37,13 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
                 'role' => User::ROLE_ADMIN,
             ]);
-        } elseif (! $admin->isAdmin()) {
-            $admin->update(['role' => User::ROLE_ADMIN]);
-            if (! $admin->email_verified_at) {
-                $admin->update(['email_verified_at' => now()]);
-            }
-            // Always ensure seeded admin's password matches the requested one.
+        } else {
+            $admin->update([
+                'role' => User::ROLE_ADMIN,
+                'email_verified_at' => $admin->email_verified_at ?? now(),
+            ]);
+
+            // Keep the local seeded admin credentials deterministic.
             $admin->update([
                 'password' => Hash::make(self::DEFAULT_ADMIN_PASSWORD, [
                     'rounds' => (int) env('BCRYPT_ROUNDS', 12),

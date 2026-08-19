@@ -23,7 +23,8 @@ class AnnouncementController extends Controller
             return Announcement::where('is_active', true)
                 ->orderBy('sort_order')
                 ->limit(50)
-                ->get();
+                ->get()
+                ->all();
         });
 
         return response()->json(['data' => $announcements]);

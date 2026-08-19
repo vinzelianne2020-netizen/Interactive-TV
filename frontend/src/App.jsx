@@ -172,7 +172,7 @@ const FALLBACK_EVENTS = [
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Upcoming Events', default: true },
   { key: 'holidays', label: 'Holiday Next Month' },
-  { key: 'benefits', label: 'Benefit Releases' },
+  { key: 'benefits', label: 'CompBen' },
   { key: 'awards', label: 'Awards' },
   { key: 'new_hires', label: 'New Hire' },
   { key: 'training', label: 'Training Schedules' },
@@ -195,7 +195,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/admin/*" element={<AdminPanel />} />
       <Route path="*" element={<KioskBoard scale={scale} />} />
     </Routes>
   );
@@ -323,7 +323,7 @@ function KioskBoard({ scale }) {
             </>
           ) : null}
 
-          {activeSection === 'holidays' ? <HolidaysSection /> : null}
+          {activeSection === 'holidays' ? <HolidaysSection activityCalendarUrl={settings.activity_calendar_url} /> : null}
           {activeSection === 'benefits' ? <BenefitsSection /> : null}
           {activeSection === 'awards' ? <AwardsSection /> : null}
           {activeSection === 'new_hires' ? <NewHiresSection /> : null}

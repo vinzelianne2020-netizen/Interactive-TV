@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\MetricController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\WeatherController;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/events', [EventController::class, 'index']);
@@ -18,9 +19,10 @@ Route::get('/clock', fn () => response()->json([
     'timezone' => config('app.timezone'),
 ]));
 
-Route::post('/auth/login', [AuthController::class, 'login'])->middleware(['throttle:auth.login']);
+Route::post('/auth/login', [AuthController::class, 'login'])
+    ->middleware(['throttle:auth.login', StartSession::class]);
 
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+Route::middleware([StartSession::class, 'auth:sanctum', 'admin'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
@@ -31,4 +33,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/announcements', [AnnouncementController::class, 'adminIndex']);
     Route::apiResource('/admin/announcements', AnnouncementController::class)->except(['index']);
     Route::put('/admin/settings/{key}', [SettingController::class, 'update']);
+    Route::post('/admin/activity-calendar', [SettingController::class, 'uploadActivityCalendar']);
 });

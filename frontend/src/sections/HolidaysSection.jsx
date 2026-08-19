@@ -17,7 +17,7 @@ const HOLIDAY_KPIS = [
   { label: 'Long Weekends', value: '3', meta: 'Q3 to Q1 outlook' },
 ];
 
-export function HolidaysSection({ title = 'Holidays Next Month' }) {
+export function HolidaysSection({ title = 'Holidays Next Month', activityCalendarUrl = '' }) {
   return (
     <section className="section-page">
       <header className="section-page__header">
@@ -84,6 +84,23 @@ export function HolidaysSection({ title = 'Holidays Next Month' }) {
         })}
         </div>
       </div>
+
+      {activityCalendarUrl ? (
+        <div className="activity-calendar-preview">
+          <div className="activity-calendar-preview__heading">
+            <div>
+              <p className="eyebrow">Workplace activities</p>
+              <h3>Activity Calendar</h3>
+            </div>
+            <a href={activityCalendarUrl} target="_blank" rel="noreferrer">Open full calendar</a>
+          </div>
+          {activityCalendarUrl.toLowerCase().endsWith('.pdf') ? (
+            <iframe title="Uploaded activity calendar" src={activityCalendarUrl} />
+          ) : (
+            <img src={activityCalendarUrl} alt="Uploaded workplace activity calendar" />
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

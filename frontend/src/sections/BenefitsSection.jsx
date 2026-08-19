@@ -72,7 +72,7 @@ const TONE_STYLES = {
   rose: { bg: 'linear-gradient(135deg, #ffe4e6, #fecdd3)', color: '#be123c' },
 };
 
-export function BenefitsSection({ title = 'Benefit Releases' }) {
+export function BenefitsSection({ title = 'CompBen' }) {
   return (
     <section className="section-page">
       <header className="section-page__header">

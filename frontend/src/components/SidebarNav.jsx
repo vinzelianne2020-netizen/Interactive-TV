@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Gift,
   HandCoins,
+  House,
   Leaf,
   ShieldCheck,
   Sofa,
@@ -12,7 +13,7 @@ import {
 } from 'lucide-react';
 
 const ICON_MAP = {
-  dashboard: CalendarDays,
+  dashboard: House,
   holidays: CalendarDays,
   benefits: HandCoins,
   awards: Award,

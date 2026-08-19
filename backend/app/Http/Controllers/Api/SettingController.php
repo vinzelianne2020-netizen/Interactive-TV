@@ -8,6 +8,7 @@ use App\Support\RecordsAdminActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 
 class SettingController extends Controller
 {
@@ -19,7 +20,7 @@ class SettingController extends Controller
     public function index(): JsonResponse
     {
         $settings = Cache::remember('settings:all', now()->addMinutes(5), function () {
-            return Setting::pluck('value', 'key');
+            return Setting::pluck('value', 'key')->all();
         });
 
         return response()->json(['data' => $settings]);
@@ -77,6 +78,29 @@ class SettingController extends Controller
         ]);
 
         return response()->json(['data' => $setting]);
+    }
+
+    public function uploadActivityCalendar(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'calendar' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
+        ]);
+
+        $directory = public_path('uploads/activity-calendar');
+        File::ensureDirectoryExists($directory);
+        File::cleanDirectory($directory);
+
+        $file = $validated['calendar'];
+        $filename = 'activity-calendar.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+        $url = '/uploads/activity-calendar/' . $filename;
+
+        Setting::updateOrCreate(['key' => 'activity_calendar_url'], ['value' => $url]);
+        Cache::forget('settings:all');
+
+        $this->recordActivity('activity_calendar.updated', Setting::class, 'activity_calendar_url');
+
+        return response()->json(['data' => ['key' => 'activity_calendar_url', 'value' => $url]]);
     }
 
     /**
