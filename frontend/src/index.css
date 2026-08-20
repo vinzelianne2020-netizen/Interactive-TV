@@ -3221,34 +3221,21 @@ button:disabled {
 .modal-close:hover  { background: rgba(200, 30, 30, 0.72); }
 .modal-close:active { transform: scale(0.9); }
 
-/* ── LEFT column: image, full natural size, scrollable ── */
+/* ── LEFT column: image fills entire column, no gaps ── */
 .modal-media {
   position: relative;
   flex: 0 0 45%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   background: #05101f;
-  scrollbar-width: none;
-}
-.modal-media::-webkit-scrollbar { display: none; }
-
-/* Subtle gradient at bottom to hint scrollability */
-.modal-media::after {
-  content: '';
-  position: sticky;
-  bottom: 0;
-  display: block;
-  height: 60px;
-  margin-top: -60px;
-  background: linear-gradient(to bottom, transparent, rgba(5,16,31,0.55));
-  pointer-events: none;
 }
 
-/* Image: full width of its column, natural height */
+/* Image: cover the entire left column — no black space */
 .modal-image {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center top;
 }
 
 .modal-image--placeholder {
@@ -3260,11 +3247,9 @@ button:disabled {
 
 /* Date badge pinned to bottom-left of image area */
 .modal-date-badge {
-  position: sticky;
+  position: absolute;
   bottom: 16px;
   left: 16px;
-  float: left;
-  margin: -68px 0 16px 16px;
   width: 76px;
   padding: 10px 8px 8px;
   display: flex;
