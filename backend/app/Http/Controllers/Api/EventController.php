@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
@@ -189,15 +190,27 @@ class EventController extends Controller
     protected function uploadImageToSupabase(UploadedFile $image): string
     {
         $baseUrl = rtrim((string) config('services.supabase.url'), '/');
+        $serviceKey = (string) config('services.supabase.service_key');
+        if ($baseUrl === '' || $serviceKey === '') {
+            throw ValidationException::withMessages([
+                'image' => ['Image storage is not configured on the server. Add SUPABASE_SERVICE_ROLE_KEY.'],
+            ]);
+        }
+
         $bucket = 'event-images';
         $filename = (string) Str::uuid() . '.' . $image->getClientOriginalExtension();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.supabase.key'),
+            'Authorization' => 'Bearer ' . $serviceKey,
+            'apikey' => $serviceKey,
         ])->attach('file', file_get_contents($image->getRealPath()), $filename)
             ->post($baseUrl . "/storage/v1/object/{$bucket}/{$filename}");
 
-        $response->throw();
+        if ($response->failed()) {
+            throw ValidationException::withMessages([
+                'image' => ['Image upload failed. Check the Supabase storage bucket and server key.'],
+            ]);
+        }
 
         return $baseUrl . "/storage/v1/object/public/{$bucket}/{$filename}";
     }
@@ -210,7 +223,8 @@ class EventController extends Controller
         }
 
         Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.supabase.key'),
+            'Authorization' => 'Bearer ' . config('services.supabase.service_key'),
+            'apikey' => (string) config('services.supabase.service_key'),
         ])->delete(rtrim((string) config('services.supabase.url'), '/') . '/storage/v1/object/event-images/' . $matches[1]);
     }
 
