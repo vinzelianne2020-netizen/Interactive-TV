@@ -203,24 +203,12 @@ function App() {
 
 function KioskBoard({ scale }) {
   const navigate = useNavigate();
-  const refreshMs = Number(import.meta.env.VITE_REFRESH_INTERVAL_MS ?? 60000);
+  const refreshMs = Number(import.meta.env.VITE_REFRESH_INTERVAL_MS ?? 15000);
   const settingsIntervalMs = 15 * 60 * 1000;
 
-  const eventsQuery = usePolling(
-    () => client.get('/events').then(({ data }) => data?.data ?? []),
+  const bootstrapQuery = usePolling(
+    () => client.get('/public/bootstrap').then(({ data }) => data?.data ?? {}),
     refreshMs,
-  );
-  const metricsQuery = usePolling(
-    () => client.get('/metrics').then(({ data }) => data?.data ?? {}),
-    refreshMs,
-  );
-  const announcementsQuery = usePolling(
-    () => client.get('/announcements').then(({ data }) => data?.data ?? []),
-    settingsIntervalMs,
-  );
-  const settingsQuery = usePolling(
-    () => client.get('/settings').then(({ data }) => data?.data ?? {}),
-    settingsIntervalMs,
   );
   const weatherQuery = usePolling(
     () => client.get('/weather').then(({ data }) => data?.data ?? {}),
@@ -232,13 +220,13 @@ function KioskBoard({ scale }) {
   const settings = useMemo(
     () => ({
       ...DEFAULT_SETTINGS,
-      ...(settingsQuery.data ?? {}),
+      ...(bootstrapQuery.data?.settings ?? {}),
     }),
-    [settingsQuery.data],
+    [bootstrapQuery.data?.settings],
   );
   const boardEvents =
-    Array.isArray(eventsQuery.data) && eventsQuery.data.length > 0
-      ? eventsQuery.data
+    Array.isArray(bootstrapQuery.data?.events) && bootstrapQuery.data.events.length > 0
+      ? bootstrapQuery.data.events
       : FALLBACK_EVENTS;
 
   const rotationSeconds = Number(settings.events_rotation_seconds ?? 24);
@@ -296,7 +284,7 @@ function KioskBoard({ scale }) {
             onActionClick={handleOpenAdmin}
           />
           <AnnouncementBanner
-            announcements={announcementsQuery.data ?? []}
+            announcements={bootstrapQuery.data?.announcements ?? []}
             fallbackMessage={DEFAULT_SETTINGS.app_subtitle}
             paused={announcementsPaused}
             onTogglePause={() => setAnnouncementsPaused((value) => !value)}
@@ -306,7 +294,7 @@ function KioskBoard({ scale }) {
           {activeSection === 'dashboard' ? (
             <>
               <StatsGrid
-                metrics={metricsQuery.data ?? {}}
+                metrics={bootstrapQuery.data?.metrics ?? {}}
                 weather={weatherQuery.data ?? {}}
                 clock={clock}
                 onStatClick={handleStatClick}

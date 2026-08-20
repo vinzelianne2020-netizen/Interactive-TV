@@ -1,0 +1,211 @@
+---
+name: knowles-connect-build-engine
+description: Use this skill whenever implementing, debugging, or hardening the Knowles Connect admin CRUD system (Events, Metrics, Announcements, Settings) and its live-sync to the public TV display — or any similarly-scoped "build a full-stack feature end-to-end and make it actually work" task. Triggers include executing a plan.md/build plan, "make this fully functional," implementing create/edit/delete/upload flows, fixing bugs that block a feature from working, wiring up real-time or polling sync between an admin panel and a public display, and any request to harden authentication, CORS, CSRF, file uploads, or session security. This skill governs HOW work gets done — persistent goal-directed execution, systematic debugging, and security-by-default — not just what to build.
+---
+
+# Knowles Connect Build Engine
+
+A execution-discipline skill combining three things most one-shot coding sessions lack: **a loop that doesn't stop until the goal is actually verified working**, **a systematic debugging protocol** instead of guess-and-check, and **security hardening treated as a default, not an afterthought**.
+
+This skill governs *how* to execute a build/fix task — pair it with the project's own plan (e.g. `plan.md`) or the user's stated feature request as the *what*.
+
+---
+
+## 1. Core Operating Principle
+
+**Never report "done" on the basis of code existing. Report "done" only on the basis of verified behavior.**
+
+Writing a `store()` method is not the goal. A record that appears in the admin list, persists after reload, and shows up on the public display is the goal. Every task in this skill ends with an observation step, not a code-writing step.
+
+---
+
+## 2. Advanced Loop Engineering — The Persistent Execution Loop
+
+Do not treat a build task as a single pass. Run it as an explicit loop with a real exit condition:
+
+```
+LOOP:
+  1. DEFINE      — state the specific, observable goal for this iteration
+                    (e.g. "POST /admin/events returns 201 and the new event
+                    appears in GET /admin/events")
+  2. IMPLEMENT   — make the smallest change that could achieve the goal
+  3. VERIFY      — actually run/exercise the change (curl, browser action,
+                    test, log inspection) — do NOT infer success from the
+                    code looking correct
+  4. COMPARE     — does the observed result match the goal exactly?
+       ├─ YES → mark this goal complete, move to the next item in the plan
+       └─ NO  → go to DEBUG PROTOCOL (Section 3), fix, return to step 3
+  5. REGRESSION CHECK — before moving on, re-verify the 1-2 most-related
+                    previously-completed goals still hold (a fix for X
+                    silently breaking Y is the most common failure mode
+                    in multi-step builds)
+GOTO LOOP with the next goal, until every goal in the plan is verified.
+```
+
+**Exit condition is explicit and non-negotiable:** the loop for a given feature does not end until Section 6 (Definition of Done) is fully satisfied for that feature — not until the assistant "feels" the code is right, not until time runs out, not until it merely compiles.
+
+### 2.1 Never Stop Silently
+
+If a goal cannot be verified (missing credentials, tool unavailable, ambiguous requirement), do not silently move on and imply success. Explicitly state:
+- What was attempted
+- What blocked verification
+- What is needed to unblock it (a credential, a decision, access to a system)
+
+This is the one legitimate way to exit the loop early — an honest blocker, clearly named — never a quiet downgrade of the goal.
+
+### 2.2 Break Large Goals Into Independently-Verifiable Units
+
+For a multi-module build (Events, Metrics, Announcements, Settings × Create/Read/Update/Delete/Upload), run the loop **per unit**, not once for the whole feature:
+
+```
+events.create → verify → events.read → verify → events.update → verify →
+events.delete → verify → events.upload → verify → metrics.create → verify → ...
+```
+
+A 20-checkbox plan run as 20 small loops catches problems immediately, where they're cheap to fix. Run as one giant loop, the same problems surface at the end, tangled together, and expensive to isolate.
+
+### 2.3 Maintain a Running Checklist
+
+Track every goal from the plan (or derive one if none exists) as a literal checklist. Update it after every verified iteration. Never mark an item complete based on planned/intended behavior — only based on Section 2's step 3 (VERIFY) actually having happened. If interrupted mid-task, the checklist is the resumption point — re-verify the last "complete" item first before trusting it and moving on.
+
+---
+
+## 3. Debugging & Error Handling Protocol
+
+When VERIFY (Section 2, step 3) fails, do not immediately start editing code. Follow this order:
+
+### 3.1 Reproduce First
+
+- Get the *exact* failure: exact error message, exact request/response, exact stack trace, exact line. "It doesn't work" is not a reproduction. A 401 on `POST /auth/login` with a specific response body is.
+- If the failure can't be reproduced on demand, that's information too — note what's non-deterministic about it (timing, session state, environment) before proceeding.
+
+### 3.2 Isolate
+
+- Narrow to the smallest failing case. Is it the request reaching the server at all? Is it CORS blocking it before it reaches the route? Is it validation? Is it the DB write? Is it the response serialization? Is it the frontend failing to read the response?
+- Use the actual layers available: browser DevTools Network tab (request/response, headers, status code), backend logs (`storage/logs/laravel.log`, `php artisan tinker` for direct DB checks), and framework-level error pages/`APP_DEBUG` output rather than guessing blind.
+- Bisect when the cause isn't obvious: comment out / stub half the suspected code path, confirm which half the failure lives in, repeat.
+
+### 3.3 Form a Specific Hypothesis
+
+State the suspected root cause as a falsifiable sentence — *"The 419 happens because SESSION_DOMAIN is set to a public-suffix domain the browser rejects"* — not a vague direction like *"something's wrong with cookies."* A vague hypothesis leads to random changes; a specific one leads to a specific, checkable fix.
+
+### 3.4 Fix the Root Cause, Not the Symptom
+
+- Prefer the fix that makes the *class* of bug impossible, not just this instance of it (e.g., add server-side file-type validation, not just a frontend `accept` attribute that a malicious or careless client can bypass).
+- If a quick patch is applied under time pressure, explicitly flag it as a workaround and name the proper fix, rather than letting it pass as the real solution.
+
+### 3.5 Verify the Fix, Then Verify Nothing Else Broke
+
+- Re-run the exact reproduction from 3.1 — confirm the specific failure is gone.
+- Re-run the regression check from Section 2.5 for related functionality.
+
+### 3.6 Build an Error Taxonomy as You Go
+
+Keep a short running mental (or written, if the task is long) map of error signatures already seen and their real causes, e.g.:
+
+| Symptom | Likely layer | Common root cause |
+|---|---|---|
+| CSRF/419 token mismatch | Cookie/session | `SameSite`/`Secure` mismatch, CORS `paths` not covering the route, stale config cache |
+| 401 on an authenticated route right after login | Session | Cookie not persisted cross-domain, `SANCTUM_STATEFUL_DOMAINS` missing the frontend host |
+| Upload succeeds but file 404s | Storage | Missing `php artisan storage:link`, wrong disk (`local` vs `public`) |
+| Admin saves fine but public display doesn't update | Cache/sync | Response caching not busted on mutation, polling interval/endpoint mismatch |
+| 422 with no visible field error in UI | Frontend | Error response shape doesn't match what `formFieldErrors` parsing expects |
+| Works locally, fails on Render | Environment | Env var only set in local `.env`, not in the Render dashboard; build-time config caching |
+
+Extend this table with every new root cause discovered — it turns future debugging in this project from search into lookup.
+
+### 3.7 Defensive Logging & Error Surfacing (build this in, don't bolt it on after)
+
+- Every catch block should distinguish error classes (auth vs validation vs network vs server) and handle each appropriately — never a single generic "something went wrong."
+- Log enough server-side to diagnose without reproducing live (request context, user/action, but never secrets or full request bodies containing credentials).
+- Frontend errors surfaced to an admin user should be actionable ("Session expired — please sign in again," not "Error: undefined").
+
+---
+
+## 4. Advanced Security Skills — Security as Default, Not Afterthought
+
+Apply this checklist proactively during implementation, not as a post-hoc audit. A feature isn't "done" per Section 6 if it fails these.
+
+### 4.1 Authentication & Session Security
+
+- [ ] Passwords hashed with a strong adaptive algorithm (bcrypt/argon2 — Laravel default is fine); never store or log plaintext
+- [ ] Session cookies: `HttpOnly` always on, `Secure` on in production, `SameSite` set deliberately based on same-site vs cross-site architecture (`Lax` same-site, `None`+`Secure` cross-site — never `None` without `Secure`)
+- [ ] Rate-limit auth endpoints (login, password reset) — brute-force protection, not just UX throttling
+- [ ] Session/token expiry set intentionally, not left at framework defaults without review
+- [ ] Logout actually invalidates the session server-side, not just clears client state
+
+### 4.2 CORS & CSRF
+
+- [ ] `allowed_origins` is an explicit allowlist of real domains — **never `*` when `supports_credentials: true`** (browsers reject this combination anyway, but it signals a security-unaware config if attempted)
+- [ ] CORS `paths` covers every route that needs cross-origin credentialed access — but no more than that; don't blanket `paths => ['*']` on a system with also-present unauthenticated public routes without considering what that exposes
+- [ ] CSRF protection active on all state-changing routes reachable from a browser session
+
+### 4.3 Input Validation & Injection Prevention
+
+- [ ] Every input validated server-side via Form Request classes — client-side validation is UX only, never trusted as the security boundary
+- [ ] All DB queries parameterized/via ORM (Eloquent) — no raw string-concatenated SQL
+- [ ] Output encoding/escaping wherever user-supplied content (announcement messages, event descriptions) is rendered — prevent stored XSS on the admin panel *and* the public display, since both render admin-entered content
+- [ ] Reject unexpected fields — don't mass-assign request input directly into models without an explicit `$fillable`/validated-only field list
+
+### 4.4 File Upload Security (directly relevant — Events banners, Settings activity calendar)
+
+- [ ] Validate MIME type **and** actual file content (not just extension) server-side
+- [ ] Enforce max file size server-side, not just in the frontend `accept`/UI hint
+- [ ] Store uploads outside of directly-executable paths; serve via a controlled disk (`storage/app/public` via symlink), never let an uploaded file be interpretable as a script by the web server
+- [ ] Generate randomized/sanitized filenames — never trust the client-supplied filename directly (path traversal, overwrite attacks)
+- [ ] Delete replaced/removed files from disk — orphaned files aren't just clutter, they're unaudited attack surface over time
+
+### 4.5 Authorization
+
+- [ ] Every admin mutation route checks not just "is authenticated" but "is this authenticated user allowed to do this" — even with a single-admin-role system today, structure it so role checks slot in later without a rewrite
+- [ ] Public display endpoints (`/public/*`) are read-only at the routing level, not just "the frontend happens not to call write methods" — a public endpoint must be incapable of mutation, not merely unlikely to be asked to
+
+### 4.6 Secrets & Environment
+
+- [ ] No secrets (API keys, DB credentials, `APP_KEY`) ever committed to git — confirm `.env` stays gitignored, confirm `.env.example` contains no real values
+- [ ] Production `APP_DEBUG=false` — stack traces and internals must never leak to end users in production
+- [ ] Environment variables set in the actual hosting platform's dashboard for production, not assumed from a local file (this project already hit this exact gap once — treat it as a standing checklist item, not a one-time fix)
+
+### 4.7 Dependency & Transport Security
+
+- [ ] HTTPS enforced end-to-end in production (no mixed content)
+- [ ] Dependencies kept reasonably current; flag any known-vulnerable package versions encountered during the work rather than silently ignoring them
+- [ ] Security headers considered where relevant (`X-Content-Type-Options`, `X-Frame-Options` or `frame-ancestors`, especially since this is a kiosk display that may be embedded)
+
+### 4.8 Security Verification Loop
+
+Security checks are not exempt from Section 2's VERIFY step. "I added validation" is not verified; *attempting* an invalid/malicious input and observing it get rejected is verified. For each security control added, perform at least one adversarial check:
+- Try submitting a disallowed file type — confirm server rejection, not just frontend.
+- Try hitting an admin endpoint without a session — confirm 401/403, not data leakage.
+- Try a cross-origin request from a non-allowlisted origin — confirm it's blocked.
+
+---
+
+## 5. Applying This to a Plan (e.g. plan.md)
+
+When executing against an existing plan document:
+
+1. Convert every checklist item in the plan into a loop goal (Section 2.3).
+2. For each backend endpoint built, apply Section 4 before considering it complete — security isn't a separate later phase, it's inline with the CRUD work.
+3. For each bug hit along the way, apply Section 3 in full rather than trial-and-error patching.
+4. Update the plan document itself (or a companion progress log) as items move from planned → implemented → verified, so progress is auditable and resumable across sessions.
+5. When a plan's Phase (e.g. "Phase 3 — Live Sync") depends on an earlier phase, re-verify the earlier phase's goals still hold before starting the new phase (this is the regression check from Section 2.5, applied at the phase level).
+
+---
+
+## 6. Definition of Done (per feature/module)
+
+A CRUD module (e.g. "Events") is only done when **all** of the following are independently verified, not merely implemented:
+
+- [ ] Create: new record persists, appears in admin list and public display
+- [ ] Read: admin list and public display reflect actual backend state, not stale cache
+- [ ] Update: edits persist and propagate to the public display
+- [ ] Delete: removal persists and propagates to the public display
+- [ ] File upload (if applicable): correct file type/size enforced server-side, old file cleaned up, new file renders correctly
+- [ ] Validation errors surface clearly and specifically to the admin user
+- [ ] Auth/session failure mid-action degrades gracefully (no silent data loss, no broken UI state)
+- [ ] Public endpoints for this module are confirmed read-only and unauthenticated-safe
+- [ ] At least one adversarial/security check performed and passed (Section 4.8)
+- [ ] Change on the admin side appears on the public display without a manual refresh, within the agreed sync interval
+
+Only once every box above is checked *by observation, not assumption* does the loop for that module close.

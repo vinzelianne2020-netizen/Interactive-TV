@@ -42,7 +42,7 @@ class EventController extends Controller
             ->orderBy('sort_order')
             ->limit(200)
             ->get()
-            ->map(fn (Event $event) => $this->formatEvent($event));
+            ->map(fn (Event $event) => $this->formatEvent($event, true));
 
         return response()->json(['data' => $events]);
     }
@@ -108,6 +108,9 @@ class EventController extends Controller
             'id' => $event->id,
             'title' => $event->title,
         ];
+        if ($event->image_url) {
+            $this->deleteImageFromSupabase($event->image_url);
+        }
         $event->delete();
 
         $this->recordActivity('event.deleted', Event::class, $snapshot['id'], [
@@ -143,7 +146,11 @@ class EventController extends Controller
         ];
 
         if ($request->hasFile('image')) {
+            $previousImageUrl = $event?->image_url;
             $safe['image_url'] = $this->uploadImageToSupabase($request->file('image'));
+            if ($previousImageUrl) {
+                $this->deleteImageFromSupabase($previousImageUrl);
+            }
         } elseif ($event !== null) {
             $safe['image_url'] = $event->image_url;
         }
@@ -151,12 +158,12 @@ class EventController extends Controller
         return $safe;
     }
 
-    protected function formatEvent(Event $event): array
+    protected function formatEvent(Event $event, bool $includeEditorFields = false): array
     {
         $eventDate = Carbon::parse($event->event_date);
         $eventTime = Carbon::parse((string) $event->event_time);
 
-        return [
+        $formatted = [
             'id' => $event->id,
             'month' => $eventDate->format('M'),
             'day' => $eventDate->format('d'),
@@ -170,6 +177,13 @@ class EventController extends Controller
             'is_published' => (bool) $event->is_published,
             'sort_order' => (int) $event->sort_order,
         ];
+
+        if ($includeEditorFields) {
+            $formatted['event_date'] = $eventDate->format('Y-m-d');
+            $formatted['event_time'] = $eventTime->format('H:i:s');
+        }
+
+        return $formatted;
     }
 
     protected function uploadImageToSupabase(UploadedFile $image): string
@@ -186,6 +200,18 @@ class EventController extends Controller
         $response->throw();
 
         return $baseUrl . "/storage/v1/object/public/{$bucket}/{$filename}";
+    }
+
+    protected function deleteImageFromSupabase(string $publicUrl): void
+    {
+        $path = parse_url($publicUrl, PHP_URL_PATH);
+        if (! is_string($path) || ! preg_match('#/storage/v1/object/public/event-images/(.+)$#', $path, $matches)) {
+            return;
+        }
+
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . config('services.supabase.key'),
+        ])->delete(rtrim((string) config('services.supabase.url'), '/') . '/storage/v1/object/event-images/' . $matches[1]);
     }
 
     protected function sanitizePlainText(string $input, int $maxLength): string

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\MetricController;
+use App\Http\Controllers\Api\PublicDisplayController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\WeatherController;
 use Illuminate\Session\Middleware\StartSession;
@@ -18,6 +19,7 @@ Route::get('/clock', fn () => response()->json([
     'now' => now()->toIso8601String(),
     'timezone' => config('app.timezone'),
 ]));
+Route::get('/public/bootstrap', [PublicDisplayController::class, 'bootstrap']);
 
 Route::get('/csrf-token', fn () => response()->json([
     'token' => csrf_token(),
@@ -37,5 +39,8 @@ Route::middleware([StartSession::class,'auth:sanctum', 'admin'])->group(function
     Route::get('/admin/announcements', [AnnouncementController::class, 'adminIndex']);
     Route::apiResource('/admin/announcements', AnnouncementController::class)->except(['index']);
     Route::put('/admin/settings/{key}', [SettingController::class, 'update']);
+    Route::post('/admin/settings', [SettingController::class, 'store']);
+    Route::get('/admin/settings/{key}', [SettingController::class, 'show']);
+    Route::delete('/admin/settings/{key}', [SettingController::class, 'destroy']);
     Route::post('/admin/activity-calendar', [SettingController::class, 'uploadActivityCalendar']);
 });

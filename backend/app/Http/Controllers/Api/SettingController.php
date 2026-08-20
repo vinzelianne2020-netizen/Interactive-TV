@@ -29,17 +29,22 @@ class SettingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        abort(405);
+        $validated = $request->validate([
+            'key' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9_]+$/', 'unique:settings,key'],
+            'value' => ['required', 'string', 'max:5000'],
+        ]);
+
+        return $this->saveSetting($validated['key'], $validated['value'], 'setting.created', 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id): JsonResponse
     {
-        abort(405);
+        return response()->json(['data' => Setting::where('key', $id)->firstOrFail()]);
     }
 
     /**
@@ -47,8 +52,8 @@ class SettingController extends Controller
      */
     public function update(Request $request, string $key): JsonResponse
     {
-        $normalizedKey = (string) preg_replace('/[^a-z0-9_]/i', '', $key);
-        if ($normalizedKey === '' || mb_strlen($normalizedKey) > 100) {
+        $normalizedKey = strtolower($key);
+        if (! preg_match('/^[a-z0-9_]{1,100}$/', $normalizedKey)) {
             return response()->json([
                 'message' => 'The setting key format is invalid.',
                 'errors' => ['key' => ['Setting key must be alphanumeric.']],
@@ -59,25 +64,7 @@ class SettingController extends Controller
             'value' => ['required', 'string', 'max:5000'],
         ]);
 
-        $previous = Setting::where('key', $normalizedKey)->first();
-        $before = $previous?->value;
-
-        $safeValue = $this->sanitizeSettingValue((string) $validated['value'], 5000);
-
-        $setting = Setting::updateOrCreate(
-            ['key' => $normalizedKey],
-            ['value' => $safeValue]
-        );
-
-        Cache::forget('settings:all');
-
-        $this->recordActivity('setting.updated', Setting::class, $setting->key ?? $normalizedKey, [
-            'key' => $normalizedKey,
-            'before' => $before,
-            'after' => $setting->value,
-        ]);
-
-        return response()->json(['data' => $setting]);
+        return $this->saveSetting($normalizedKey, $validated['value'], 'setting.updated');
     }
 
     public function uploadActivityCalendar(Request $request): JsonResponse
@@ -106,9 +93,26 @@ class SettingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        abort(405);
+        $setting = Setting::where('key', $id)->firstOrFail();
+        $setting->delete();
+        Cache::forget('settings:all');
+        $this->recordActivity('setting.deleted', Setting::class, $id);
+
+        return response()->json(['message' => 'Setting deleted.']);
+    }
+
+    protected function saveSetting(string $key, string $value, string $action, int $status = 200): JsonResponse
+    {
+        $setting = Setting::updateOrCreate(
+            ['key' => $key],
+            ['value' => $this->sanitizeSettingValue($value, 5000)]
+        );
+        Cache::forget('settings:all');
+        $this->recordActivity($action, Setting::class, $key, ['key' => $key]);
+
+        return response()->json(['data' => $setting], $status);
     }
 
     protected function sanitizeSettingValue(string $input, int $maxLength): string

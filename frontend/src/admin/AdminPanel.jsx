@@ -667,7 +667,7 @@ export function AdminPanel() {
   }
 
   async function handleDeleteRecord() {
-    if (!selectedRecordId || activeSection === 'settings') {
+    if (!selectedRecordId) {
       return;
     }
 
@@ -686,6 +686,10 @@ export function AdminPanel() {
 
       if (activeSection === 'announcements') {
         await client.delete(`/admin/announcements/${selectedRecordId}`);
+      }
+
+      if (activeSection === 'settings') {
+        await client.delete(`/admin/settings/${encodeURIComponent(selectedRecordId)}`);
       }
 
       setSelectedRecordId(null);
@@ -1205,7 +1209,7 @@ export function AdminPanel() {
                 <h2>{selectedLabel}</h2>
               </div>
               
-              {selectedRecordId && activeSection !== 'settings' ? (
+              {selectedRecordId ? (
                 confirmDeleteId === selectedRecordId ? (
                   <div className="admin-confirm-delete-row">
                     <span className="admin-confirm-text">Delete permanently?</span>
