@@ -10,6 +10,7 @@ const backendRootUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 export const client = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
+  withXSRFToken: true,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
     Accept: 'application/json',
@@ -19,6 +20,7 @@ export const client = axios.create({
 export function initCsrfCookie() {
   return axios.get(`${backendRootUrl}/sanctum/csrf-cookie`, {
     withCredentials: true,
+    withXSRFToken: true,
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
       Accept: 'application/json',
