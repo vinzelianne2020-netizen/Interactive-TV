@@ -75,7 +75,10 @@ export function EventDetailsModal({ event, onClose }) {
             ) : null}
           </div>
 
-          <p className="modal-description">{event.description ?? 'No description available yet.'}</p>
+          <div
+            className="modal-description rich-text-output"
+            dangerouslySetInnerHTML={{ __html: event.description ?? 'No description available yet.' }}
+          />
         </div>
 
         <div className="modal-footer">

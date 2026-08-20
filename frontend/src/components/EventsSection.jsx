@@ -126,7 +126,10 @@ export function EventsSection({
               <span>{featuredEvent.location}</span>
               {featuredEvent.category ? <span>{featuredEvent.category}</span> : null}
             </div>
-            <p className="event-slideshow__description">{featuredEvent.description}</p>
+            <div
+              className="event-slideshow__description rich-text-output"
+              dangerouslySetInnerHTML={{ __html: featuredEvent.description ?? '' }}
+            />
             <div className="event-slideshow__dots" aria-label="Upcoming event slideshow">
               {events.map((event, index) => (
                 <span

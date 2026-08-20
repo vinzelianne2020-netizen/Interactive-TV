@@ -29,7 +29,10 @@ export function EventCard({ event, onClick }) {
           </span>
         </div>
         <h3 className="event-card__title">{event.title}</h3>
-        <p className="event-card__description">{event.description}</p>
+        <div
+          className="event-card__description rich-text-output"
+          dangerouslySetInnerHTML={{ __html: event.description ?? '' }}
+        />
       </div>
       <div className="event-card__media">
         {event.image_url ? (

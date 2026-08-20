@@ -137,7 +137,7 @@ class EventController extends Controller
 
         $safe = [
             'title' => $this->sanitizePlainText((string) $validated['title'], 255),
-            'description' => isset($validated['description']) ? $this->sanitizePlainText((string) $validated['description'], 5000) : null,
+            'description' => isset($validated['description']) ? $this->sanitizeRichText((string) $validated['description'], 5000) : null,
             'event_date' => (string) $validated['event_date'],
             'event_time' => (string) $validated['event_time'],
             'location' => isset($validated['location']) ? $this->sanitizePlainText((string) $validated['location'], 255) : null,
@@ -264,5 +264,40 @@ class EventController extends Controller
         $trimmed = trim(preg_replace('/\s+/u', ' ', $stripped) ?? '');
 
         return mb_substr($trimmed, 0, $maxLength, 'UTF-8');
+    }
+
+    protected function sanitizeRichText(string $input, int $maxLength): string
+    {
+        $allowed = '<b><strong><i><em><u><ul><ol><li><p><br><div><font><span>'; 
+        $clean = strip_tags($input, $allowed);
+        $clean = preg_replace('/\s(on\w+|href|src|class|id)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean) ?? '';
+        $clean = preg_replace_callback('/\sstyle\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', function (array $match): string {
+            $style = trim($match[1], "\\\"'");
+            $safe = [];
+            foreach (explode(';', $style) as $declaration) {
+                [$property, $value] = array_pad(explode(':', $declaration, 2), 2, '');
+                $property = strtolower(trim($property));
+                $value = trim($value);
+                if (in_array($property, ['text-align', 'font-family', 'font-size'], true)
+                    && preg_match('/^[a-zA-Z0-9 ,.%()\"\'-]+$/', $value)) {
+                    $safe[] = $property . ':' . $value;
+                }
+            }
+
+            return $safe ? ' style="' . implode(';', $safe) . '"' : '';
+        }, $clean) ?? $clean;
+        $clean = preg_replace_callback('/\s(face|size)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', function (array $match): string {
+            $value = trim($match[2], "\\\"'");
+            if ($match[1] === 'size' && ! preg_match('/^[1-7]$/', $value)) {
+                return '';
+            }
+            if ($match[1] === 'face' && ! preg_match('/^[a-zA-Z0-9 ,_-]+$/', $value)) {
+                return '';
+            }
+
+            return ' ' . strtolower($match[1]) . '="' . $value . '"';
+        }, $clean) ?? $clean;
+
+        return mb_substr($clean, 0, $maxLength, 'UTF-8');
     }
 }

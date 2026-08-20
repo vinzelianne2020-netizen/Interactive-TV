@@ -36,6 +36,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { clearAccessToken, client, initCsrfCookie, setAccessToken } from '../api/client';
+import { RichTextEditor } from '../components/RichTextEditor';
 
 const SECTION_DEFS = {
   events: {
@@ -1283,13 +1284,10 @@ export function AdminPanel() {
 
                   <label className="admin-input-group">
                     <span className="admin-input-label">Description &amp; Highlights</span>
-                    <textarea
-                      rows="3"
+                    <RichTextEditor
                       value={draft.description}
-                      onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                      onChange={(description) => setDraft((current) => ({ ...current, description }))}
                       placeholder="Enter full schedule, agenda, keynotes, or participant instructions..."
-                      maxLength={5000}
-                      className="admin-form-textarea"
                     />
                     {formFieldErrors?.description ? <p className="admin-field-error">{formFieldErrors.description[0]}</p> : null}
                   </label>
