@@ -19,6 +19,10 @@ Route::get('/clock', fn () => response()->json([
     'timezone' => config('app.timezone'),
 ]));
 
+Route::get('/csrf-token', fn () => response()->json([
+    'token' => csrf_token(),
+]))->middleware(StartSession::class);
+
 Route::post('/auth/login', [AuthController::class, 'login'])
     ->middleware(['throttle:auth.login', StartSession::class]);
 

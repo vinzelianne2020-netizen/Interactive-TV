@@ -17,13 +17,15 @@ export const client = axios.create({
   },
 });
 
-export function initCsrfCookie() {
-  return axios.get(`${backendRootUrl}/sanctum/csrf-cookie`, {
+export async function initCsrfCookie() {
+  await axios.get(`${backendRootUrl}/sanctum/csrf-cookie`, {
     withCredentials: true,
-    withXSRFToken: true,
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
       Accept: 'application/json',
     },
   });
+
+  const { data } = await client.get('/csrf-token');
+  client.defaults.headers.common['X-CSRF-TOKEN'] = data.token;
 }
