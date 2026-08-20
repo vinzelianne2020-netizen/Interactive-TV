@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$configuredSessionDomain = env('SESSION_DOMAIN');
+
 return [
 
     /*
@@ -156,7 +158,10 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => env('APP_ENV', 'production') === 'production'
+        && in_array($configuredSessionDomain, ['localhost', '127.0.0.1'], true)
+        ? null
+        : $configuredSessionDomain,
 
     /*
     |--------------------------------------------------------------------------
