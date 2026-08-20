@@ -26,7 +26,7 @@ Route::get('/csrf-token', fn () => response()->json([
 Route::post('/auth/login', [AuthController::class, 'login'])
     ->middleware(['throttle:auth.login', StartSession::class]);
 
-Route::middleware([StartSession::class, 'auth:sanctum', 'admin'])->group(function () {
+Route::middleware([StartSession::class,'auth:sanctum', 'admin'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 

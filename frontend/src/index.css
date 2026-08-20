@@ -1203,10 +1203,7 @@ h3 {
 .admin-shell--workspace {
   min-height: 100vh;
   padding: 24px 28px;
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+  display: block;
 }
 
 .admin-sidebar {
@@ -1574,6 +1571,7 @@ h3 {
   gap: 20px;
   min-width: 0;
   margin-left: 304px;
+  width: calc(100% - 304px);
   min-height: calc(100vh - 48px);
   padding-bottom: 32px;
 }
@@ -4237,9 +4235,7 @@ button:disabled {
 
 @media (max-width: 1080px) {
   .admin-shell--responsive.admin-shell--workspace {
-    grid-template-columns: 1fr;
     padding: 18px;
-    gap: 14px;
   }
 
   .admin-sidebar--responsive {
@@ -4252,6 +4248,7 @@ button:disabled {
 
   .admin-main--responsive {
     margin-left: 0;
+    width: 100%;
   }
 
   .admin-rail--responsive {
