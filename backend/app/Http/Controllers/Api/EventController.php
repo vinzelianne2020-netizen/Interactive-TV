@@ -200,6 +200,8 @@ class EventController extends Controller
         $bucket = 'event-images';
         $filename = (string) Str::uuid() . '.' . $image->getClientOriginalExtension();
 
+        $this->ensureSupabaseBucket($baseUrl, $serviceKey, $bucket);
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $serviceKey,
             'apikey' => $serviceKey,
@@ -207,12 +209,40 @@ class EventController extends Controller
             ->post($baseUrl . "/storage/v1/object/{$bucket}/{$filename}");
 
         if ($response->failed()) {
+            report(new \RuntimeException('Supabase event image upload failed with status ' . $response->status()));
             throw ValidationException::withMessages([
                 'image' => ['Image upload failed. Check the Supabase storage bucket and server key.'],
             ]);
         }
 
         return $baseUrl . "/storage/v1/object/public/{$bucket}/{$filename}";
+    }
+
+    protected function ensureSupabaseBucket(string $baseUrl, string $serviceKey, string $bucket): void
+    {
+        $headers = [
+            'Authorization' => 'Bearer ' . $serviceKey,
+            'apikey' => $serviceKey,
+            'Accept' => 'application/json',
+        ];
+
+        $bucketResponse = Http::withHeaders($headers)->get($baseUrl . '/storage/v1/bucket/' . $bucket);
+        if ($bucketResponse->successful()) {
+            return;
+        }
+
+        $created = Http::withHeaders($headers)->post($baseUrl . '/storage/v1/bucket', [
+            'id' => $bucket,
+            'name' => $bucket,
+            'public' => true,
+        ]);
+
+        if (! $created->successful() && $created->status() !== 409) {
+            report(new \RuntimeException('Supabase event image bucket check failed with status ' . $created->status()));
+            throw ValidationException::withMessages([
+                'image' => ['Supabase storage bucket event-images is unavailable. Check the server key permissions.'],
+            ]);
+        }
     }
 
     protected function deleteImageFromSupabase(string $publicUrl): void
