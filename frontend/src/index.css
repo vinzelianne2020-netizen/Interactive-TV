@@ -3286,26 +3286,33 @@ button:disabled {
 }
 
 .modal-meta-pill {
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(37, 99, 235, 0.08);
+  gap: 7px;
+  background: rgba(37, 99, 235, 0.07);
   color: #1a4084;
   font-weight: 700;
+  font-size: 0.84rem;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  transition: background 140ms ease;
+}
+.modal-meta-pill:hover {
+  background: rgba(37, 99, 235, 0.13);
 }
 
 .modal-meta-pill--accent {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(59, 130, 246, 0.12));
-  color: #1d4ed8;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(99, 102, 241, 0.1));
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.18);
 }
 
 .modal-description {
   min-width: 0;
-  font-size: clamp(0.82rem, 1.1vw, 1rem);
-  line-height: 1.45;
-  color: #465d86;
+  font-size: clamp(0.88rem, 1.2vw, 1.02rem);
+  line-height: 1.6;
+  color: #374b72;
   overflow-wrap: anywhere;
 }
 
@@ -3314,8 +3321,8 @@ button:disabled {
 .modal-description ul,
 .modal-description ol {
   margin-top: 0;
-  margin-bottom: 0.65em;
-  line-height: 1.45;
+  margin-bottom: 0.7em;
+  line-height: 1.6;
 }
 
 .modal-description p:last-child,
@@ -3333,58 +3340,54 @@ button:disabled {
 .modal-description font[size="6"],
 .modal-description font[size="7"] { font-size: 1.25em; }
 
+/* ── Sticky footer CTA ── */
 .modal-footer {
-  flex: 0 0 auto;
-}
-
-.modal-footer {
-  padding: 16px 28px 28px;
+  position: sticky;
+  bottom: 0;
+  padding: 14px 28px 24px;
   display: flex;
   justify-content: flex-end;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 30%);
+  flex-shrink: 0;
 }
 
 .modal-primary {
   border: 0;
-  border-radius: 16px;
-  padding: 14px 22px;
+  border-radius: 14px;
+  padding: 13px 28px;
   font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
   color: #fff;
-  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-  box-shadow: 0 16px 28px rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  box-shadow:
+    0 4px 6px rgba(37, 99, 235, 0.2),
+    0 12px 28px rgba(37, 99, 235, 0.3);
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
-
 .modal-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 22px 36px rgba(37, 99, 235, 0.34);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(37, 99, 235, 0.2), 0 18px 36px rgba(37, 99, 235, 0.38);
 }
-
 .modal-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
+/* ── Mobile ── */
 @media (max-width: 720px) {
   .modal-panel {
-    width: min(100% - 24px, 560px);
-    height: calc(100% - 24px);
-    border-radius: 24px;
-  }
-
-  .modal-media {
-    width: 100%;
+    width: min(100% - 20px, 480px);
+    max-height: calc(100% - 24px);
+    border-radius: 22px;
   }
 
   .modal-body {
-    padding: 18px 18px 10px;
-    gap: 10px;
-  }
-
-  .modal-title {
-    font-size: 1.8rem;
+    padding: 4px 18px 6px;
+    gap: 12px;
   }
 
   .modal-meta-pill {
-    padding: 7px 10px;
+    padding: 6px 10px;
     font-size: 0.76rem;
   }
 
