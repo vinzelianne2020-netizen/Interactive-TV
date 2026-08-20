@@ -284,6 +284,7 @@ export function AdminPanel() {
   const [workspaceLoading, setWorkspaceLoading] = useState(false);
   const [workspaceError, setWorkspaceError] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [draft, setDraft] = useState(createEmptyDraft('events'));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
@@ -394,6 +395,11 @@ export function AdminPanel() {
       return;
     }
 
+    // If the user is explicitly creating a new record, don't auto-select.
+    if (isCreatingNew) {
+      return;
+    }
+
     if (currentRecords.length === 0) {
       setSelectedRecordId(null);
       setDraft(createEmptyDraft(activeSection));
@@ -411,7 +417,7 @@ export function AdminPanel() {
       setDraft(buildDraftFromRecord(activeSection, currentRecords[0]));
       setImageFile(null);
     }
-  }, [activeSection, currentRecords, isAuthenticated, selectedRecordId]);
+  }, [activeSection, currentRecords, isAuthenticated, selectedRecordId, isCreatingNew]);
 
   useEffect(() => {
     if (!selectedRecord) {
@@ -501,6 +507,7 @@ export function AdminPanel() {
       setCurrentUser(null);
       setWorkspace({ events: [], metrics: [], announcements: [], settings: [] });
       setSelectedRecordId(null);
+      setIsCreatingNew(false);
       setDraft(createEmptyDraft('events'));
       setImageFile(null);
       setSaveMessage('Signed out successfully.');
@@ -510,6 +517,7 @@ export function AdminPanel() {
 
   function handleTabChange(section) {
     navigate(`/admin/${section}`);
+    setIsCreatingNew(false);
     setSaveMessage('');
     setSaveError('');
     setFormFieldErrors({});
@@ -519,6 +527,7 @@ export function AdminPanel() {
   function handleQuickAction(actionSection) {
     navigate(`/admin/${actionSection}`);
     setSelectedRecordId(null);
+    setIsCreatingNew(true);
     setDraft(createEmptyDraft(actionSection));
     setImageFile(null);
     setSaveMessage('');
@@ -528,6 +537,7 @@ export function AdminPanel() {
   }
 
   function handleSelectRecord(record) {
+    setIsCreatingNew(false);
     setSelectedRecordId(getRecordId(activeSection, record));
     setDraft(buildDraftFromRecord(activeSection, record));
     setImageFile(null);
@@ -539,6 +549,7 @@ export function AdminPanel() {
 
   function handleCreateNew() {
     setSelectedRecordId(null);
+    setIsCreatingNew(true);
     setDraft(createEmptyDraft(activeSection));
     setImageFile(null);
     setSaveMessage('');
@@ -555,6 +566,9 @@ export function AdminPanel() {
     setFormFieldErrors({});
 
     try {
+      let savedId = selectedRecordId;
+      const isCreating = !selectedRecordId;
+
       if (activeSection === 'events') {
         const payload = new FormData();
         payload.append('title', draft.title ?? '');
@@ -571,13 +585,15 @@ export function AdminPanel() {
         }
 
         if (selectedRecordId) {
-          await client.post(`/admin/events/${selectedRecordId}?_method=PUT`, payload, {
+          const res = await client.post(`/admin/events/${selectedRecordId}?_method=PUT`, payload, {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
+          savedId = res.data?.data?.id ?? selectedRecordId;
         } else {
-          await client.post('/admin/events', payload, {
+          const res = await client.post('/admin/events', payload, {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
+          savedId = res.data?.data?.id ?? null;
         }
       }
 
@@ -590,9 +606,11 @@ export function AdminPanel() {
         };
 
         if (selectedRecordId) {
-          await client.put(`/admin/metrics/${selectedRecordId}`, payload);
+          const res = await client.put(`/admin/metrics/${selectedRecordId}`, payload);
+          savedId = res.data?.data?.id ?? selectedRecordId;
         } else {
-          await client.post('/admin/metrics', payload);
+          const res = await client.post('/admin/metrics', payload);
+          savedId = res.data?.data?.id ?? null;
         }
       }
 
@@ -604,9 +622,11 @@ export function AdminPanel() {
         };
 
         if (selectedRecordId) {
-          await client.put(`/admin/announcements/${selectedRecordId}`, payload);
+          const res = await client.put(`/admin/announcements/${selectedRecordId}`, payload);
+          savedId = res.data?.data?.id ?? selectedRecordId;
         } else {
-          await client.post('/admin/announcements', payload);
+          const res = await client.post('/admin/announcements', payload);
+          savedId = res.data?.data?.id ?? null;
         }
       }
 
@@ -614,9 +634,17 @@ export function AdminPanel() {
         await client.put(`/admin/settings/${draft.key}`, { value: draft.value });
       }
 
-      setSaveMessage('Saved successfully.');
+      setSaveMessage(isCreating ? `${SECTION_DEFS[activeSection]?.singular ?? 'Item'} created successfully!` : 'Changes saved successfully.');
       await loadWorkspace();
-      if (activeSection !== 'settings') {
+
+      // After save, select the saved record so the editor stays on it.
+      if (activeSection !== 'settings' && savedId) {
+        setIsCreatingNew(false);
+        setSelectedRecordId(String(savedId));
+        setImageFile(null);
+      } else if (activeSection !== 'settings') {
+        // Fallback: stay in create mode if we couldn't get an ID
+        setIsCreatingNew(true);
         setSelectedRecordId(null);
         setDraft(createEmptyDraft(activeSection));
         setImageFile(null);
@@ -635,7 +663,7 @@ export function AdminPanel() {
       setFormFieldErrors(thrownError?.response?.data?.errors ?? {});
     } finally {
       setLoadingAction(false);
-      setTimeout(() => setSaveMessage(''), 3000);
+      setTimeout(() => setSaveMessage(''), 4000);
     }
   }
 
@@ -693,11 +721,12 @@ export function AdminPanel() {
         await client.delete(`/admin/settings/${encodeURIComponent(selectedRecordId)}`);
       }
 
+      setIsCreatingNew(false);
       setSelectedRecordId(null);
       setDraft(createEmptyDraft(activeSection));
       setImageFile(null);
       setConfirmDeleteId(null);
-      setSaveMessage('Item deleted.');
+      setSaveMessage('Item deleted successfully.');
       await loadWorkspace();
     } catch (thrownError) {
       const status = thrownError?.response?.status;
@@ -712,7 +741,7 @@ export function AdminPanel() {
       }
     } finally {
       setLoadingAction(false);
-      setTimeout(() => setSaveMessage(''), 3000);
+      setTimeout(() => setSaveMessage(''), 4000);
     }
   }
 
@@ -1640,12 +1669,12 @@ export function AdminPanel() {
                   {loadingAction ? (
                     <>
                       <RefreshCw size={17} className="admin-spinner" />
-                      <span>Saving Changes...</span>
+                      <span>{isCreatingNew ? `Creating ${currentDef.singular}...` : 'Saving Changes...'}</span>
                     </>
                   ) : (
                     <>
                       <Save size={17} strokeWidth={2.4} />
-                      <span>Save {currentDef.singular}</span>
+                      <span>{isCreatingNew ? `Create ${currentDef.singular}` : `Save ${currentDef.singular}`}</span>
                     </>
                   )}
                 </button>
@@ -1657,7 +1686,7 @@ export function AdminPanel() {
                   disabled={loadingAction}
                 >
                   <Plus size={17} strokeWidth={2.4} />
-                  <span>Reset Form</span>
+                  <span>{isCreatingNew ? 'Clear Form' : '+ New Record'}</span>
                 </button>
               </div>
             </form>
