@@ -35,7 +35,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { client, initCsrfCookie } from '../api/client';
+import { clearAccessToken, client, initCsrfCookie, setAccessToken } from '../api/client';
 
 const SECTION_DEFS = {
   events: {
@@ -467,6 +467,7 @@ export function AdminPanel() {
     try {
       await initCsrfCookie();
       const loginResponse = await client.post('/auth/login', authForm);
+      setAccessToken(loginResponse.data?.data?.token);
       setCurrentUser(loginResponse.data?.data ?? null);
       setIsAuthenticated(true);
       setSaveMessage('Signed in successfully.');
@@ -494,6 +495,7 @@ export function AdminPanel() {
     } catch (_error) {
       // Keep UI responsive even if session is cleared
     } finally {
+      clearAccessToken();
       setIsAuthenticated(false);
       setCurrentUser(null);
       setWorkspace({ events: [], metrics: [], announcements: [], settings: [] });

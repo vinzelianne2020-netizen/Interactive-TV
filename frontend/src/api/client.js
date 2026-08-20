@@ -6,6 +6,7 @@ const apiBaseUrl = !isLocalBrowser && configuredApiBaseUrl.includes('localhost')
   ? '/api'
   : configuredApiBaseUrl;
 const backendRootUrl = apiBaseUrl.replace(/\/api\/?$/, '');
+const storedAccessToken = window.localStorage.getItem('knowles_admin_token');
 
 export const client = axios.create({
   baseURL: apiBaseUrl,
@@ -14,8 +15,19 @@ export const client = axios.create({
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
     Accept: 'application/json',
+    ...(storedAccessToken ? { Authorization: `Bearer ${storedAccessToken}` } : {}),
   },
 });
+
+export function setAccessToken(token) {
+  window.localStorage.setItem('knowles_admin_token', token);
+  client.defaults.headers.common.Authorization = `Bearer ${token}`;
+}
+
+export function clearAccessToken() {
+  window.localStorage.removeItem('knowles_admin_token');
+  delete client.defaults.headers.common.Authorization;
+}
 
 export async function initCsrfCookie() {
   await axios.get(`${backendRootUrl}/sanctum/csrf-cookie`, {

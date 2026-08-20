@@ -101,6 +101,7 @@ class AuthController extends Controller
 
         RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
+        $accessToken = $user->createToken('admin-web')->plainTextToken;
 
         $this->recordActivity('auth.login_succeeded', $user, $user->id);
 
@@ -110,6 +111,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'token' => $accessToken,
             ],
         ]);
     }
@@ -120,6 +122,7 @@ class AuthController extends Controller
         $user = $request->user();
         if ($user) {
             $this->recordActivity('auth.logout_succeeded', $user, $user->id);
+            $user->currentAccessToken()?->delete();
         }
 
         Auth::guard('web')->logout();
